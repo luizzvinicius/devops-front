@@ -1,0 +1,73 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"formatter": {
+		"enabled": true,
+		"formatWithErrors": true,
+		"attributePosition": "auto",
+		"indentStyle": "tab",
+		"indentWidth": 4,
+		"lineWidth": 100,
+		"lineEnding": "lf"
+	},
+	"javascript": {
+		"formatter": {
+			"arrowParentheses": "asNeeded",
+			"bracketSameLine": false,
+			"bracketSpacing": true,
+			"jsxQuoteStyle": "double",
+			"quoteProperties": "asNeeded",
+			"semicolons": "always",
+			"trailingCommas": "all"
+		}
+	},
+	"linter": {
+		"rules": {
+			"recommended": true,
+			"complexity": {
+				"useArrowFunction": "info",
+				"noBannedTypes": "warn",
+				"noForEach": "off",
+				"noMultipleSpacesInRegularExpressionLiterals": "error",
+				"noUselessTernary": "warn",
+				"useFlatMap": "error"
+			},
+			"style": {
+				"noCommaOperator": "off",
+				"noNonNullAssertion": "off",
+				"noParameterAssign": "off",
+				"noNamespace": "error",
+				"noNegationElse": "error",
+				"noUnusedTemplateLiteral": "error",
+				"noUselessElse": "warn",
+				"noVar": "warn",
+				"noYodaExpression": "error",
+				"useNamingConvention": "off",
+				"useImportType": "warn",
+				"useShorthandArrayType": "error",
+				"useShorthandAssign": "error"
+			},
+			"suspicious": {
+				"noAssignInExpressions": "off",
+				"noConstEnum": "error",
+				"noDoubleEquals": "error",
+				"useAwait": "error"
+			},
+			"a11y": {
+				"useAltText": "warn",
+				"useKeyWithClickEvents": "off"
+			},
+			"performance": {
+				"noAccumulatingSpread": "error",
+				"noDelete": "error"
+			}
+		}
+	},
+	"json": {
+		"formatter": {
+			"trailingCommas": "none"
+		}
+	},
+	"files": {
+		"ignore": ["**/*.js", "**/*.mjs", ".next/**", "node_modules/**", "components/ui/**"]
+	}
+}
