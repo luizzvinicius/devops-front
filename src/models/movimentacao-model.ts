@@ -4,7 +4,7 @@ type Movimentacoes = {
 	data: Date;
 };
 
-const OperacaoEnum = {
+export const OperacaoEnum = {
 	DEPOSITO: "DEPOSITO",
 	SAQUE: "SAQUE",
 } as const;

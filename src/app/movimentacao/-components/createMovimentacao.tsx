@@ -23,11 +23,11 @@ import {
 } from "@/components/ui/select";
 import { useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
 import { useCreateMovimentacao } from "./useMovimentacaoQuery";
+import { OperacaoEnum } from "@/models/movimentacao-model";
 
-enum OperacaoEnum {
-	DEPOSITO = "DEPOSITO",
-	SAQUE = "SAQUE",
-}
+export const OperacaoEnumSchema = z.enum(
+	Object.values(OperacaoEnum) as [OperacaoEnum, ...OperacaoEnum[]],
+);
 
 const createMovimentacaoSchema = z
 	.object({
@@ -46,7 +46,7 @@ const createMovimentacaoSchema = z
 				.transform(val => Number(val)),
 		}),
 		valor: z.number(),
-		tipoMovimentacao: z.nativeEnum(OperacaoEnum),
+		tipoMovimentacao: OperacaoEnumSchema,
 	})
 	.required();
 
@@ -77,7 +77,6 @@ export function CreateMovimentacao() {
 		resolver: zodResolver(createMovimentacaoSchema),
 		defaultValues: nullFormState,
 	});
-
 
 	async function onSubmit(formData: CreateMovimentacaoType) {
 		await createMovimentacao({
