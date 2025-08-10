@@ -37,6 +37,7 @@
 		"zod": "^3.24.3"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.1.4",
 		"@eslint/eslintrc": "^3",
 		"@tailwindcss/postcss": "^4",
 		"@tanstack/react-query-devtools": "^5.59.20",
