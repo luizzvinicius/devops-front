@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
 	"formatter": {
 		"enabled": true,
 		"formatWithErrors": true,
@@ -27,23 +27,19 @@
 				"useArrowFunction": "info",
 				"noBannedTypes": "warn",
 				"noForEach": "off",
-				"noMultipleSpacesInRegularExpressionLiterals": "error",
 				"noUselessTernary": "warn",
 				"useFlatMap": "error"
 			},
 			"style": {
-				"noCommaOperator": "off",
 				"noNonNullAssertion": "off",
 				"noParameterAssign": "off",
 				"noNamespace": "error",
 				"noNegationElse": "error",
 				"noUnusedTemplateLiteral": "error",
 				"noUselessElse": "warn",
-				"noVar": "warn",
 				"noYodaExpression": "error",
 				"useNamingConvention": "off",
 				"useImportType": "warn",
-				"useShorthandArrayType": "error",
 				"useShorthandAssign": "error"
 			},
 			"suspicious": {
@@ -68,6 +64,6 @@
 		}
 	},
 	"files": {
-		"ignore": ["**/*.js", "**/*.mjs", ".next/**", "node_modules/**", "components/ui/**"]
+		"includes": ["src/**/*.ts", "src/**/*.tsx", "!src/components/ui/*.tsx"]
 	}
 }
