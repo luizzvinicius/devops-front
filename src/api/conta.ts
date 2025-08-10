@@ -1,37 +1,10 @@
 import axios from "axios";
-import type { Movimentacoes } from "./movimentacoes";
-import type { Pessoa } from "./pessoas";
+import { BASE_URL } from "@/constants/constants";
+import type { ContaRequestDto, ContaResponseDto } from "@/models/conta-model";
 
-const base_url = "http://localhost:8080/api/v1/conta";
-
-export type ContaRequestDto = {
-	pessoaId: number;
-	numeroConta: string;
-};
-
-export type ContaResponseDto = {
-	id: number;
-	movimentacoes: Movimentacao[] | [];
-	numero: string;
-	saldo: number;
-};
-
-export interface Conta {
-	id: number;
-	pessoa: Pessoa;
-	movimentacoes: Movimentacoes[] | [];
-	numero: string;
-	saldo: number;
-}
-
-export type Movimentacao = {
-	id: number;
-	valor: number;
-	// tipo: string;
-	dataHora: string;
-};
+const ENTITY = "/conta";
 
 export const criarConta = async (params: ContaRequestDto) => {
-	const { data } = await axios.post(base_url, params);
-	return data as ContaResponseDto;
+	const { data } = await axios.post<ContaResponseDto>(`${BASE_URL}${ENTITY}`, params);
+	return data;
 };
