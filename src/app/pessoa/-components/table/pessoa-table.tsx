@@ -7,6 +7,7 @@ import type { AnyFormApi } from "@tanstack/react-form";
 import {
 	Dialog,
 	DialogContent,
+	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -32,7 +33,10 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 		accessorKey: "cpf",
 		header: "CPF",
 		cell: ({ row }) => {
-			return <div>{row.original.cpf}</div>;
+			const cpf = row.original.cpf;
+			return (
+				<div>{`${cpf.substring(0, 3)}.${cpf.substring(3, 6)}.${cpf.substring(6, 9)}-${cpf.substring(9, 11)}`}</div>
+			);
 		},
 	},
 	{
@@ -76,6 +80,7 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
+						<DialogDescription>Cadastro de pessoas</DialogDescription>
 						<DialogHeader>
 							<DialogTitle>Confirmar Remoção</DialogTitle>
 						</DialogHeader>
