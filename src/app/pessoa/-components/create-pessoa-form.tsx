@@ -151,16 +151,7 @@ export function CreatePessoaForm() {
 			</form>
 			<div className="h-[300px] overflow-y-auto">
 				<PessoaDataTable
-					// [
-					// 	{
-					// 		nome: "Luiz",
-					// 		cpf: "1111111111",
-					// 		endereco: "rua tal",
-					// 		contas: [],
-					// 		id: 1,
-					// 	},
-					// ]
-					pessoas={pessoasResponse.map(pessoa => ({
+					pessoas={pessoasResponse.pessoas.map(pessoa => ({
 						...pessoa,
 						form,
 						isDialogOpen,
