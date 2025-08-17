@@ -1,22 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPessoa, deletePessoa, getAllPessoas, updatePessoa } from "@/api/pessoas";
-import type { PessoaPageDto, PessoaRequestDto } from "@/api/pessoas";
+import type { PessoaPageDto, PessoaRequestDto } from "@/models/pessoa-model";
 
 export const useGetPessoas = (page: number) => {
 	return useQuery({
 		initialData: {
 			pessoas: [],
+			pageSize: 0,
 			totalPages: 0,
-			totalElements: 0,
 		},
 		queryKey: ["pessoas"],
 		queryFn: async () => {
 			const request = await getAllPessoas(page);
-			if (!request.data) {
+			if (!request) {
 				return Promise.reject();
 			}
-
-			return request.data as PessoaPageDto;
+			return request;
 		},
 	});
 };
@@ -35,19 +34,19 @@ export function useCreatePessoa() {
 		onSuccess: data => {
 			if (!data) return;
 
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto | undefined) => {
-				if (!old) {
+			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
+				if (!old || old.pessoas.length === 0) {
 					return {
 						pessoas: [data],
-						totalPages: 1,
-						totalElements: 1,
+						pageSize: 1,
+						totalPages: 0,
 					};
 				}
 
 				return {
 					...old,
 					pessoas: [...old.pessoas, data],
-					totalElements: old.totalElements + 1,
+					pageSize: old.pageSize + 1,
 				};
 			});
 		},
@@ -69,14 +68,13 @@ export function useUpdatePessoa() {
 		onSuccess: data => {
 			if (!data) return;
 
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto | undefined) => {
+			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
 				if (!old) return;
 				const updated = old.pessoas.map(pessoa => (pessoa.id === data.id ? data : pessoa));
 
 				return {
 					...old,
 					pessoas: [...updated],
-					totalElements: old.totalElements + 1,
 				};
 			});
 		},
@@ -97,13 +95,13 @@ export function useDeletePessoa() {
 		},
 
 		onSuccess: idparam => {
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto | undefined) => {
+			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
 				if (!old) return;
 				const updated = old.pessoas.filter(pessoa => pessoa.id !== idparam);
 				return {
 					...old,
 					pessoas: [...updated],
-					totalElements: old.totalElements + 1,
+					pageSize: old.pageSize - 1,
 				};
 			});
 		},
