@@ -13,9 +13,9 @@ export type PessoaResponseDto = Pessoa & {
 	contas: ContaResponseDto[];
 };
 
-export type PessoaPageDto = Pagination & {
+export type PessoaPageDto = {
 	pessoas: PessoaResponseDto[];
-};
+} & Pagination;
 
 export type Pagination = {
 	pageSize: number;
