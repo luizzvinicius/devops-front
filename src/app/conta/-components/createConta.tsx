@@ -1,6 +1,4 @@
 "use client";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
 	Table,
@@ -18,10 +16,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { InputMask } from "@react-input/mask";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import {
 	Select,
@@ -32,11 +27,13 @@ import {
 } from "@/components/ui/select";
 import { useCreateConta } from "./useContaQuery";
 import { useDeletePessoa, useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
+import { useForm } from "@tanstack/react-form";
+import { FieldInfo } from "@/components/forms/FieldInfo";
+import { Label } from "@/components/ui/label";
 
 const createContaSchema = z
 	.object({
 		id: z.number(),
-		numeroConta: z.string().nonempty("Número da conta é obrigatório"),
 		pessoa: z.object({
 			id: z.number(),
 			name: z.string().optional(),
@@ -50,7 +47,6 @@ export type CreateContaType = z.infer<typeof createContaSchema>;
 
 const nullFormState = {
 	id: 0,
-	numeroConta: "",
 	pessoa: {
 		id: 0,
 		name: "",
@@ -66,15 +62,19 @@ export function CreateConta() {
 	const { mutateAsync: createConta, isPending: isCreateContaPending } = useCreateConta();
 	const { mutateAsync: deletePessoa, isPending: isDeletePessoaPending } = useDeletePessoa();
 
-	const form = useForm<CreateContaType>({
-		resolver: zodResolver(createContaSchema),
+	const form = useForm({
 		defaultValues: nullFormState,
+		onSubmit: values => {
+			onSubmit(values.value);
+		},
+		validators: {
+			onChange: createContaSchema,
+		},
 	});
 
 	async function onSubmit(formData: CreateContaType) {
 		if (formData.id === 0) {
 			await createConta({
-				numeroConta: formData.numeroConta,
 				pessoaId: formData.pessoa.id,
 			});
 		}
@@ -87,7 +87,6 @@ export function CreateConta() {
 
 		form.reset({
 			id: pessoaConta.id,
-			numeroConta: pessoaConta.conta[0].numero,
 			pessoa: {
 				id: pessoaConta.id,
 				name: pessoaConta.nome,
@@ -104,68 +103,48 @@ export function CreateConta() {
 
 	return (
 		<div>
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-4">
-					<FormField
-						control={form.control}
-						name="pessoa"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Pessoa</FormLabel>
-								<FormControl>
-									<Select
-										onValueChange={value => {
-											const selectedPessoa = pessoasResponse?.pessoas?.find(
-												item => String(item.id) === value,
-											);
-											field.onChange(selectedPessoa);
-										}}
-										value={String(field.value.id)}
-									>
-										<SelectTrigger className="w-[180px]">
-											<SelectValue placeholder="Selecione uma pessoa" />
-										</SelectTrigger>
-										<SelectContent>
-											{pessoasResponse?.pessoas?.map(item => (
-												<SelectItem key={item.id} value={String(item.id)}>
-													{item.nome} - {item.cpf}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.pessoa?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="numeroConta"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Número da Conta</FormLabel>
-								<FormControl>
-									<InputMask
-										mask="999999"
-										replacement={{ 9: /\d/ }}
-										component={Input}
-										placeholder="Número da Conta"
-										{...field}
-									/>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.numeroConta?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-					<div className="flex justify-center">
-						<Button type="submit">salvar</Button>
-					</div>
-				</form>
-			</Form>
+			<form
+				onSubmit={e => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
+				}}
+				className="flex flex-col gap-y-4"
+			>
+				<form.Field name="pessoa">
+					{field => (
+						<div>
+							<Label id="pessoa" className="text-xl">
+								Pessoa
+							</Label>
+							<Select
+								onValueChange={value => {
+									const selectedPessoa = pessoasResponse?.pessoas?.find(
+										item => String(item.id) === value,
+									);
+									onChange(selectedPessoa);
+								}}
+								value={String(field.state.value)}
+							>
+								<SelectTrigger className="w-[180px]">
+									<SelectValue placeholder="Selecione uma pessoa" />
+								</SelectTrigger>
+								<SelectContent>
+									{pessoasResponse?.pessoas?.map(item => (
+										<SelectItem key={item.id} value={String(item.id)}>
+											{item.nome} - {item.cpf}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FieldInfo fieldMeta={field.state.meta} />
+						</div>
+					)}
+				</form.Field>
+				<div className="flex justify-center">
+					<Button type="submit">salvar</Button>
+				</div>
+			</form>
 			<div className="h-[300px] overflow-y-auto">
 				<Table>
 					<TableHeader>
@@ -183,9 +162,9 @@ export function CreateConta() {
 								<TableCell>{item.nome}</TableCell>
 								<TableCell>{item.cpf}</TableCell>
 								<TableCell>
-									{(item.conta === undefined || item.conta[0]) === undefined
+									{(item.contas === undefined || item.contas[0]) === undefined
 										? "Sem conta"
-										: item.conta[0].numero}
+										: item.contas[0].id}
 								</TableCell>
 								<TableCell className="text-center p-0">
 									<Button

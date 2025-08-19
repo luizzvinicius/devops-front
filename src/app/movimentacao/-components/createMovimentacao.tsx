@@ -1,7 +1,6 @@
 "use client";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Table,
 	TableBody,
@@ -10,10 +9,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { InputMask } from "@react-input/mask";
-import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	Select,
 	SelectContent,
@@ -24,6 +20,10 @@ import {
 import { useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
 import { useCreateMovimentacao } from "./useMovimentacaoQuery";
 import { OperacaoEnum } from "@/models/movimentacao-model";
+import { useForm } from "@tanstack/react-form";
+import { FieldInfo } from "@/components/forms/FieldInfo";
+import { Label } from "@/components/ui/label";
+import { z } from "zod";
 
 export const OperacaoEnumSchema = z.enum(
 	Object.values(OperacaoEnum) as [OperacaoEnum, ...OperacaoEnum[]],
@@ -39,7 +39,6 @@ const createMovimentacaoSchema = z
 		}),
 		conta: z.object({
 			id: z.number(),
-			numero: z.string().nonempty("Número da conta é obrigatório"),
 			saldo: z
 				.number()
 				.min(-1, "Saldo deve ser maior ou igual a zero")
@@ -61,7 +60,6 @@ const nullFormState = {
 	},
 	conta: {
 		id: 0,
-		numero: "",
 		saldo: 0,
 	},
 	valor: 0,
@@ -73,9 +71,14 @@ export function CreateMovimentacao() {
 
 	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
 
-	const form = useForm<CreateMovimentacaoType>({
-		resolver: zodResolver(createMovimentacaoSchema),
+	const form = useForm({
 		defaultValues: nullFormState,
+		onSubmit: values => {
+			onSubmit(values.value);
+		},
+		validators: {
+			onChange: createMovimentacaoSchema,
+		},
 	});
 
 	async function onSubmit(formData: CreateMovimentacaoType) {
@@ -88,173 +91,159 @@ export function CreateMovimentacao() {
 
 	return (
 		<div>
-			<Form {...form}>
-				<form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-y-4">
-					<FormField
-						control={form.control}
-						name="pessoa"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Pessoa</FormLabel>
-								<FormControl>
-									<Select
-										onValueChange={value => {
-											const selectedPessoa = pessoasResponse.pessoas.find(
-												item => String(item.id) === value,
-											);
-											if (selectedPessoa) {
-												field.onChange(selectedPessoa);
-												form.setValue("conta", selectedPessoa.conta[0]);
-											}
-										}}
-										value={field.value?.id ? String(field.value.id) : undefined}
-									>
-										<SelectTrigger className="w-[200px]">
-											<SelectValue placeholder="Selecione uma pessoa" />
-										</SelectTrigger>
-										<SelectContent>
-											{pessoasResponse.pessoas.map(item => (
-												<SelectItem key={item.id} value={String(item.id)}>
-													{item.nome} - {item.cpf}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.pessoa?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="conta"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Conta</FormLabel>
-								<FormControl>
-									<Select
-										onValueChange={value => {
-											const selectedConta = pessoasResponse.pessoas.find(
-												item => String(item.conta[0].id) === value,
-											);
-											field.onChange(selectedConta?.conta[0]);
-										}}
-										value={
-											pessoasResponse.pessoas.find(
-												pessoa =>
-													String(pessoa.conta[0].id) ===
-													String(field.value),
-											)?.conta
-										}
-									>
-										<SelectTrigger className="w-[200px]">
-											<SelectValue placeholder="Selecione uma conta" />
-										</SelectTrigger>
-										<SelectContent>
-											{form.getValues("pessoa")?.id
-												? pessoasResponse.pessoas
-														.filter(
-															item =>
-																item.id ===
-																form.getValues("pessoa").id,
-														)
-														.map(item => (
-															<SelectItem
-																key={item.conta[0].id}
-																value={String(item.conta[0].id)}
-															>
-																{item.conta[0].numero} - Saldo:{" "}
-																{item.conta[0].saldo.toLocaleString(
-																	"pt-BR",
-																	{
-																		style: "currency",
-																		currency: "BRL",
-																	},
-																)}
-															</SelectItem>
-														))
-												: null}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.conta?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name="valor"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Valor</FormLabel>
-								<FormControl>
-									<InputMask
-										className="w-[200px]"
-										mask="99999999999999"
-										replacement={{ 9: /\d/ }}
-										component={Input}
-										placeholder="Valor"
-										value={field.value === 0 ? "" : field.value} // Mostra vazio se o valor for 0
-										onChange={e => {
-											const numericValue = e.target.value.replace(/\D/g, "");
-											field.onChange(
-												numericValue
-													? Number.parseInt(numericValue, 10)
-													: 0,
-											);
-										}}
-									/>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.valor?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="operacao"
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className="text-xl">Depositar/Retirar</FormLabel>
-								<FormControl>
-									<Select
-										onValueChange={value => {
-											field.onChange(value);
-										}}
-										value={field.value} // Define o valor atual do campo
-									>
-										<SelectTrigger className="w-[180px]">
-											<SelectValue placeholder="Operação" />
-										</SelectTrigger>
-										<SelectContent>
-											{Object.values(OperacaoEnum).map(opr => (
-												<SelectItem key={opr} value={opr.toString()}>
-													{opr.toLowerCase()}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-								</FormControl>
-								<span className="text-sm text-red-500">
-									{form.formState?.errors?.tipoMovimentacao?.message}
-								</span>
-							</FormItem>
-						)}
-					/>
-
-					<div className="flex justify-center">
-						<Button type="submit">Salvar</Button>
-					</div>
-				</form>
-			</Form>
+			<form
+				onSubmit={e => {
+					e.preventDefault();
+					e.stopPropagation();
+					form.handleSubmit();
+				}}
+				className="flex flex-col gap-y-4"
+			>
+				<form.Field name="pessoa">
+					{field => (
+						<div>
+							<Label id="pessoa" className="text-xl">
+								Pessoa
+							</Label>
+							<Select
+								onValueChange={value => {
+									const selectedPessoa = pessoasResponse.pessoas.find(
+										item => String(item.id) === value,
+									);
+									if (selectedPessoa) {
+										onChange(selectedPessoa);
+										form.setValue("conta", selectedPessoa.contas[0]);
+									}
+								}}
+								value={
+									field.state.value.id ? String(field.state.value.id) : undefined
+								}
+							>
+								<SelectTrigger id="pessoa" className="w-[200px]">
+									<SelectValue placeholder="Selecione uma pessoa" />
+								</SelectTrigger>
+								<SelectContent>
+									{pessoasResponse.pessoas.map(item => (
+										<SelectItem key={item.id} value={String(item.id)}>
+											{item.nome} - {item.cpf}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FieldInfo fieldMeta={field.state.meta} />
+						</div>
+					)}
+				</form.Field>
+				<form.Field name="conta">
+					{field => (
+						<div>
+							<Label htmlFor="conta" className="text-xl">
+								Conta
+							</Label>
+							<Select
+								onValueChange={value => {
+									const selectedConta = pessoasResponse.pessoas.find(
+										item => String(item.contas[0].id) === value,
+									);
+									field.onChange(selectedConta?.contas[0]);
+								}}
+								value={
+									pessoasResponse.pessoas.find(
+										pessoa =>
+											String(pessoa.contas[0].id) ===
+											String(field.state.value),
+									)?.contas
+								}
+							>
+								<SelectTrigger className="w-[200px]">
+									<SelectValue placeholder="Selecione uma conta" />
+								</SelectTrigger>
+								<SelectContent id="conta">
+									{form.state.values.pessoa.id
+										? pessoasResponse.pessoas
+												.filter(
+													item => item.id === form.state.values.pessoa.id,
+												)
+												.map(item => (
+													<SelectItem
+														key={item.contas[0].id}
+														value={String(item.contas[0].id)}
+													>
+														{item.contas[0].id} - Saldo:{" "}
+														{item.contas[0].saldo.toLocaleString(
+															"pt-BR",
+															{
+																style: "currency",
+																currency: "BRL",
+															},
+														)}
+													</SelectItem>
+												))
+										: null}
+								</SelectContent>
+							</Select>
+							<FieldInfo fieldMeta={field.state.meta} />
+						</div>
+					)}
+				</form.Field>
+				<form.Field name="valor">
+					{field => (
+						<div>
+							<Label htmlFor="valor" className="text-xl">
+								Valor
+							</Label>
+							<InputMask
+								id="valor"
+								className="w-[200px]"
+								mask="99999999999999"
+								replacement={{ 9: /\d/ }}
+								component={Input}
+								placeholder="Valor"
+								value={field.state.value === 0 ? "" : field.state.value}
+								onChange={e => {
+									const numericValue = e.target.value.replace(/\D/g, "");
+									field.onChange(
+										numericValue ? Number.parseInt(numericValue, 10) : 0,
+									);
+								}}
+							/>
+							<FieldInfo fieldMeta={field.state.meta} />
+						</div>
+					)}
+				</form.Field>
+				<form.Field name="tipoMovimentacao">
+					{field => (
+						<div>
+							<Label id="movimentacao" className="text-xl">
+								Movimentacao
+							</Label>
+							<Select
+								onValueChange={value => {
+									field.onChange(value);
+								}}
+								value={field.state.value}
+							>
+								<SelectTrigger className="w-[180px]">
+									<SelectValue placeholder="Operação" />
+								</SelectTrigger>
+								<SelectContent>
+									{Object.values(OperacaoEnum).map(opr => (
+										<SelectItem key={opr} value={opr.toString()}>
+											{opr.toLowerCase()}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+							<FieldInfo fieldMeta={field.state.meta} />
+						</div>
+					)}
+				</form.Field>
+				<div className="flex justify-center">
+					<Button type="submit">Salvar</Button>
+				</div>
+			</form>
 			<div className="h-[300px] overflow-y-auto">
-				{pessoasResponse.pessoas[form.getValues().pessoa.id] === undefined ? (
+				{pessoasResponse.pessoas[form.state.values.pessoa.id] === undefined ? (
 					"sem transações"
 				) : (
 					<Table>
@@ -269,20 +258,20 @@ export function CreateMovimentacao() {
 						? "Sem transação"
 						: ""} */}
 						<TableBody>
-							{pessoasResponse.pessoas[form.getValues().pessoa.id].conta.map(
+							{pessoasResponse.pessoas[form.state.values.pessoa.id].contas.map(
 								(item, index) => (
 									<TableRow key={item.id}>
 										<TableCell>
 											{item.movimentacoes === undefined ||
 											item.movimentacoes[0] === undefined
 												? "sem transações"
-												: item.movimentacoes[0].dataHora}
+												: item.movimentacoes[0].data.toString()}
 										</TableCell>
 										<TableCell>
 											{item.movimentacoes === undefined ||
 											item.movimentacoes[0] === undefined
 												? "sem transações"
-												: item.movimentacoes[0].dataHora}
+												: item.movimentacoes[0].data.toString()}
 										</TableCell>
 									</TableRow>
 								),
