@@ -9,6 +9,15 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
 	Dialog,
 	DialogContent,
 	DialogFooter,
@@ -18,41 +27,61 @@ import {
 } from "@/components/ui/dialog";
 import { z } from "zod";
 import { useState } from "react";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { useCreateConta } from "./useContaQuery";
 import { useDeletePessoa, useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Label } from "@/components/ui/label";
+import type { PessoaPageDto, PessoaResponseDto } from "@/models/pessoa-model";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const createContaSchema = z
 	.object({
+		// id: z.number(),
+		// pessoa: z.object({}),
 		id: z.number(),
-		pessoa: z.object({
-			id: z.number(),
-			name: z.string().optional(),
-			cpf: z.string(),
-			address: z.string().optional(),
-		}),
+		nome: z.string(),
+		cpf: z.string(),
+		endereco: z.string(),
 	})
 	.required();
 
 export type CreateContaType = z.infer<typeof createContaSchema>;
 
 const nullFormState = {
+	// id: 0,
+	// pessoa: {
+	// },
 	id: 0,
-	pessoa: {
-		id: 0,
-		name: "",
-		cpf: "",
-		address: "",
-	},
+	nome: "",
+	cpf: "",
+	endereco: "",
+};
+
+const pessoa: PessoaResponseDto = {
+	id: 1,
+	nome: "Luiz",
+	cpf: "11111111111",
+	endereco: "rua tal",
+	contas: [
+		{
+			id: 1,
+			movimentacoes: [
+				{
+					data: new Date(),
+					id: 4,
+					valor: 50,
+				},
+			],
+			saldo: 50,
+		},
+	],
+};
+const pessoa_mock: PessoaPageDto = {
+	pessoas: [pessoa],
+	pageSize: 1,
+	totalPages: 1,
 };
 
 export function CreateConta() {
@@ -73,33 +102,35 @@ export function CreateConta() {
 	});
 
 	async function onSubmit(formData: CreateContaType) {
-		if (formData.id === 0) {
-			await createConta({
-				pessoaId: formData.pessoa.id,
-			});
-		}
+		// if (formData.id === 0) {
+		await createConta({
+			pessoaId: formData.id,
+		});
+		// }
 
 		form.reset(nullFormState);
 	}
 
 	function handleEdit(index: number) {
-		const pessoaConta = pessoasResponse.pessoas[index];
+		const pessoaConta = pessoa_mock.pessoas[index];
 
 		form.reset({
+			// id: pessoaConta.id,
+			// pessoa: {
 			id: pessoaConta.id,
-			pessoa: {
-				id: pessoaConta.id,
-				name: pessoaConta.nome,
-				cpf: pessoaConta.cpf,
-				address: pessoaConta.endereco,
-			},
+			nome: pessoaConta.nome,
+			cpf: pessoaConta.cpf,
+			endereco: pessoaConta.endereco,
+			// },
 		});
 	}
 
 	async function handleRemove(index: number) {
-		await deletePessoa(pessoasResponse.pessoas[index].id);
+		await deletePessoa(pessoa_mock.pessoas[index].id);
 		setIsDialogOpen(false);
 	}
+	const [open, setOpen] = useState(false);
+	const [value, setValue] = useState<PessoaResponseDto>();
 
 	return (
 		<div>
@@ -111,38 +142,71 @@ export function CreateConta() {
 				}}
 				className="flex flex-col gap-y-4"
 			>
-				<form.Field name="pessoa">
+				<form.Field name="id">
 					{field => (
 						<div>
 							<Label id="pessoa" className="text-xl">
 								Pessoa
 							</Label>
-							<Select
-								onValueChange={value => {
-									const selectedPessoa = pessoasResponse?.pessoas?.find(
-										item => String(item.id) === value,
-									);
-									onChange(selectedPessoa);
-								}}
-								value={String(field.state.value)}
-							>
-								<SelectTrigger className="w-[180px]">
-									<SelectValue placeholder="Selecione uma pessoa" />
-								</SelectTrigger>
-								<SelectContent>
-									{pessoasResponse?.pessoas?.map(item => (
-										<SelectItem key={item.id} value={String(item.id)}>
-											{item.nome} - {item.cpf}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<Popover open={open} onOpenChange={setOpen}>
+								<PopoverTrigger asChild>
+									<Button
+										variant="outline"
+										role="combobox"
+										aria-expanded={open}
+										className="w-[200px] justify-between"
+									>
+										{value
+											? pessoa_mock.pessoas.find(
+													pessoa => pessoa.id === value.id,
+												)?.nome
+											: "Selecione uma pessoa"}
+										<ChevronsUpDown className="opacity-50" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent className="w-[200px] p-0">
+									<Command>
+										<CommandInput placeholder="Nome" className="h-9" />
+										<CommandList>
+											<CommandGroup>
+												{pessoa_mock.pessoas.map(pessoa => (
+													<CommandItem
+														key={pessoa.id}
+														value={String(pessoa.id)}
+														onSelect={currentValue => {
+															setValue(
+																pessoa_mock.pessoas.find(
+																	pessoa =>
+																		String(pessoa.id) ===
+																		currentValue,
+																),
+															);
+															setOpen(false);
+														}}
+													>
+														{pessoa.nome} - {pessoa.cpf}
+														<Check
+															className={cn(
+																"ml-auto",
+																value?.id === pessoa.id
+																	? "opacity-100"
+																	: "opacity-0",
+															)}
+														/>
+													</CommandItem>
+												))}
+											</CommandGroup>
+											<CommandEmpty>Não encontrado</CommandEmpty>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
 					)}
 				</form.Field>
 				<div className="flex justify-center">
-					<Button type="submit">salvar</Button>
+					<Button type="submit">Criar conta</Button>
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
@@ -157,14 +221,14 @@ export function CreateConta() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{pessoasResponse.pessoas.map((item, index) => (
-							<TableRow key={item.id}>
-								<TableCell>{item.nome}</TableCell>
-								<TableCell>{item.cpf}</TableCell>
+						{pessoa_mock.pessoas.map((pessoa, index) => (
+							<TableRow key={pessoa.id}>
+								<TableCell>{pessoa.nome}</TableCell>
+								<TableCell>{pessoa.cpf}</TableCell>
 								<TableCell>
-									{(item.contas === undefined || item.contas[0]) === undefined
+									{(pessoa.contas === undefined || pessoa.contas[0]) === undefined
 										? "Sem conta"
-										: item.contas[0].id}
+										: pessoa.contas[0].id}
 								</TableCell>
 								<TableCell className="text-center p-0">
 									<Button
