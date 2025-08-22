@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import type { PessoaPageDto, PessoaResponseDto } from "@/models/pessoa-model";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { showCpfFormatted } from "@/utils/util";
 
 const createContaSchema = z
 	.object({
@@ -154,7 +155,7 @@ export function CreateConta() {
 										variant="outline"
 										role="combobox"
 										aria-expanded={open}
-										className="w-[200px] justify-between"
+										className="w-1/2 justify-between"
 									>
 										{value
 											? pessoa_mock.pessoas.find(
@@ -164,7 +165,7 @@ export function CreateConta() {
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="w-[200px] p-0">
+								<PopoverContent className="w-full p-0">
 									<Command>
 										<CommandInput placeholder="Nome" className="h-9" />
 										<CommandList>
@@ -184,7 +185,8 @@ export function CreateConta() {
 															setOpen(false);
 														}}
 													>
-														{pessoa.nome} - {pessoa.cpf}
+														Nome: {pessoa.nome} CPF:
+														{showCpfFormatted(pessoa.cpf)}
 														<Check
 															className={cn(
 																"ml-auto",
@@ -216,7 +218,6 @@ export function CreateConta() {
 							<TableHead>Nome</TableHead>
 							<TableHead>CPF</TableHead>
 							<TableHead>Número da conta</TableHead>
-							<TableHead>Editar</TableHead>
 							<TableHead>Remover</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -229,15 +230,6 @@ export function CreateConta() {
 									{(pessoa.contas === undefined || pessoa.contas[0]) === undefined
 										? "Sem conta"
 										: pessoa.contas[0].id}
-								</TableCell>
-								<TableCell className="text-center p-0">
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => handleEdit(index)}
-									>
-										Editar
-									</Button>
 								</TableCell>
 								<TableCell className="text-center p-0">
 									<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

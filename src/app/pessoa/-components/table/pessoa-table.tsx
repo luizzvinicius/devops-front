@@ -13,6 +13,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
+import { showCpfFormatted } from "@/utils/util";
 
 type PessoaColumn = PessoaResponseDto & {
 	form: AnyFormApi;
@@ -34,9 +35,7 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 		header: "CPF",
 		cell: ({ row }) => {
 			const cpf = row.original.cpf;
-			return (
-				<div>{`${cpf.substring(0, 3)}.${cpf.substring(3, 6)}.${cpf.substring(6, 9)}-${cpf.substring(9, 11)}`}</div>
-			);
+			return <div>{showCpfFormatted(cpf)}</div>;
 		},
 	},
 	{
