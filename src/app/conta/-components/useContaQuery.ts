@@ -1,5 +1,6 @@
-import { type ContaRequestDto, criarConta } from "@/api/conta";
-import type { PessoaPageDto } from "@/api/pessoas";
+import { criarConta } from "@/api/conta";
+import { type ContaRequestDto, ContaResponseDto } from "@/models/conta-model";
+import type { PessoaPageDto } from "@/models/pessoa-model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateConta() {
@@ -9,14 +10,14 @@ export function useCreateConta() {
 		mutationKey: ["createConta"],
 		mutationFn: async (data: ContaRequestDto) => await criarConta(data),
 
-		// onError: e => {
-		// 	console.log("Erro ao criar conta:", e);
-		// },
+		onError: e => {
+			console.log("Erro ao criar conta:", e);
+		},
 
-		onSuccess: async data => {
+		onSuccess: data => {
 			if (!data) return;
 
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto | undefined) => {
+			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
 				if (!old) return;
 				const updated = old.pessoas.map(pessoa =>
 					pessoa.id === data.id
