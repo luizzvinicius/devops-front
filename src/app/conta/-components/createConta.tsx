@@ -1,14 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import {
 	Command,
 	CommandEmpty,
 	CommandGroup,
@@ -17,80 +9,53 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useEffect, useRef, useState } from "react";
 import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { z } from "zod";
-import { useState } from "react";
-import { useCreateConta } from "./useContaQuery";
-import { useDeletePessoa, useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
+	useBuscarPessoaEConta,
+	useCreateConta,
+	useDeleteConta,
+	usePessoasConta,
+} from "./useContaQuery";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Label } from "@/components/ui/label";
-import type { PessoaPageDto, PessoaResponseDto } from "@/models/pessoa-model";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showCpfFormatted } from "@/utils/util";
+import { z } from "zod";
+import ContasTable from "./table/ContasTable";
 
 const createContaSchema = z
 	.object({
-		// id: z.number(),
-		// pessoa: z.object({}),
 		id: z.number(),
-		nome: z.string(),
-		cpf: z.string(),
-		endereco: z.string(),
 	})
 	.required();
 
-export type CreateContaType = z.infer<typeof createContaSchema>;
-
 const nullFormState = {
-	// id: 0,
-	// pessoa: {
-	// },
 	id: 0,
-	nome: "",
-	cpf: "",
-	endereco: "",
 };
-
-const pessoa: PessoaResponseDto = {
-	id: 1,
-	nome: "Luiz",
-	cpf: "11111111111",
-	endereco: "rua tal",
-	contas: [
-		{
-			id: 1,
-			movimentacoes: [
-				{
-					data: new Date(),
-					id: 4,
-					valor: 50,
-				},
-			],
-			saldo: 50,
-		},
-	],
-};
-const pessoa_mock: PessoaPageDto = {
-	pessoas: [pessoa],
-	pageSize: 1,
-	totalPages: 1,
-};
-
 export function CreateConta() {
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-	const { data: pessoasResponse, isFetching, error } = useGetPessoas(0);
+	const [searchTerm, setSearchTerm] = useState("");
+	const [queryEnabled, setQueryEnabled] = useState(false);
+	const [open, setOpen] = useState(false);
+	const [value, setValue] = useState<string | undefined>("");
+	const triggerRef = useRef<HTMLButtonElement>(null);
 
-	const { mutateAsync: createConta, isPending: isCreateContaPending } = useCreateConta();
-	const { mutateAsync: deletePessoa, isPending: isDeletePessoaPending } = useDeletePessoa();
+	/*Queries */
+	const pessoasConta = usePessoasConta(searchTerm, 0, queryEnabled);
+	const { mutateAsync: createConta } = useCreateConta();
+	const { data: pessoaEConta } = useBuscarPessoaEConta(Number(value));
+	const deleteConta = useDeleteConta();
+
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			if (searchTerm.length > 0) {
+				setQueryEnabled(true);
+			}
+		}, 600);
+		return () => clearTimeout(handler);
+	}, [searchTerm]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -102,36 +67,16 @@ export function CreateConta() {
 		},
 	});
 
-	async function onSubmit(formData: CreateContaType) {
-		// if (formData.id === 0) {
+	async function onSubmit(formData: z.infer<typeof createContaSchema>) {
+		console.log(formData);
+
 		await createConta({
 			pessoaId: formData.id,
 		});
-		// }
 
+		setValue("");
 		form.reset(nullFormState);
 	}
-
-	function handleEdit(index: number) {
-		const pessoaConta = pessoa_mock.pessoas[index];
-
-		form.reset({
-			// id: pessoaConta.id,
-			// pessoa: {
-			id: pessoaConta.id,
-			nome: pessoaConta.nome,
-			cpf: pessoaConta.cpf,
-			endereco: pessoaConta.endereco,
-			// },
-		});
-	}
-
-	async function handleRemove(index: number) {
-		await deletePessoa(pessoa_mock.pessoas[index].id);
-		setIsDialogOpen(false);
-	}
-	const [open, setOpen] = useState(false);
-	const [value, setValue] = useState<PessoaResponseDto>();
 
 	return (
 		<div>
@@ -152,45 +97,55 @@ export function CreateConta() {
 							<Popover open={open} onOpenChange={setOpen}>
 								<PopoverTrigger asChild>
 									<Button
+										ref={triggerRef}
 										variant="outline"
 										role="combobox"
 										aria-expanded={open}
 										className="w-1/2 justify-between"
 									>
 										{value
-											? pessoa_mock.pessoas.find(
-													pessoa => pessoa.id === value.id,
-												)?.nome
+											? pessoasConta.data?.pessoas.map(pessoa => {
+													return pessoa.id === Number(value)
+														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
+														: "";
+												})
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
 								</PopoverTrigger>
-								<PopoverContent className="w-full p-0">
+								<PopoverContent
+									className="p-1"
+									style={{
+										width: triggerRef.current
+											? triggerRef.current.offsetWidth
+											: undefined,
+									}}
+								>
 									<Command>
-										<CommandInput placeholder="Nome" className="h-9" />
+										<CommandInput
+											placeholder="Digite o nome da pessoa"
+											onValueChange={setSearchTerm}
+										/>
 										<CommandList>
+											{pessoasConta.data.pessoas.length === 0 && (
+												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
+											)}
 											<CommandGroup>
-												{pessoa_mock.pessoas.map(pessoa => (
+												{pessoasConta.data?.pessoas.map(pessoa => (
 													<CommandItem
 														key={pessoa.id}
-														value={String(pessoa.id)}
-														onSelect={currentValue => {
-															setValue(
-																pessoa_mock.pessoas.find(
-																	pessoa =>
-																		String(pessoa.id) ===
-																		currentValue,
-																),
-															);
+														value={pessoa.nome}
+														onSelect={_ => {
+															field.handleChange(pessoa.id);
+															setValue(String(pessoa.id));
 															setOpen(false);
 														}}
 													>
-														Nome: {pessoa.nome} CPF:
-														{showCpfFormatted(pessoa.cpf)}
+														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
 														<Check
 															className={cn(
 																"ml-auto",
-																value?.id === pessoa.id
+																Number(value) === pessoa.id
 																	? "opacity-100"
 																	: "opacity-0",
 															)}
@@ -198,7 +153,6 @@ export function CreateConta() {
 													</CommandItem>
 												))}
 											</CommandGroup>
-											<CommandEmpty>Não encontrado</CommandEmpty>
 										</CommandList>
 									</Command>
 								</PopoverContent>
@@ -212,58 +166,19 @@ export function CreateConta() {
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Nome</TableHead>
-							<TableHead>CPF</TableHead>
-							<TableHead>Número da conta</TableHead>
-							<TableHead>Remover</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{pessoa_mock.pessoas.map((pessoa, index) => (
-							<TableRow key={pessoa.id}>
-								<TableCell>{pessoa.nome}</TableCell>
-								<TableCell>{pessoa.cpf}</TableCell>
-								<TableCell>
-									{(pessoa.contas === undefined || pessoa.contas[0]) === undefined
-										? "Sem conta"
-										: pessoa.contas[0].id}
-								</TableCell>
-								<TableCell className="text-center p-0">
-									<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-										<DialogTrigger asChild>
-											<Button variant="destructive" size="sm">
-												Remover
-											</Button>
-										</DialogTrigger>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Confirmar Remoção</DialogTitle>
-											</DialogHeader>
-											<p>Tem certeza que deseja remover este item?</p>
-											<DialogFooter>
-												<Button
-													variant="outline"
-													onClick={() => setIsDialogOpen(false)}
-												>
-													Cancelar
-												</Button>
-												<Button
-													variant="destructive"
-													onClick={() => handleRemove(index)}
-												>
-													Remover
-												</Button>
-											</DialogFooter>
-										</DialogContent>
-									</Dialog>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+				{pessoaEConta[0]?.nome !== "" ? (
+					<ContasTable
+						contas={pessoaEConta.map(pessoa => ({
+							...pessoa,
+							form,
+							isDialogOpen,
+							setIsDialogOpen,
+							deleteConta: (id?: string) => deleteConta.mutate(id),
+						}))}
+					/>
+				) : (
+					<ContasTable contas={[]} />
+				)}
 			</div>
 		</div>
 	);

@@ -12,14 +12,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import type { PessoaResponseDto } from "@/models/pessoa-model";
+import type { PessoaContaRow } from "@/models/pessoa-model";
 import { showCpfFormatted } from "@/utils/util";
 
-type ContasColumns = PessoaResponseDto & {
+type ContasColumns = PessoaContaRow & {
 	form: AnyFormApi;
 	isDialogOpen: boolean;
 	setIsDialogOpen: (isDialogOpen: boolean) => void;
-	deleteConta: (id: number) => void;
+	deleteConta: (id?: string) => void;
 };
 
 export const columns: ColumnDef<ContasColumns>[] = [
@@ -38,10 +38,17 @@ export const columns: ColumnDef<ContasColumns>[] = [
 		},
 	},
 	{
-		accessorKey: "id",
+		accessorKey: "conta.id",
 		header: "Número conta",
 		cell: ({ row }) => {
-			return <div>{row.original.id}</div>;
+			return <div>{row.original.conta_id}</div>;
+		},
+	},
+	{
+		accessorKey: "conta.saldo",
+		header: "Saldo",
+		cell: ({ row }) => {
+			return <div>{row.original.conta_saldo}</div>;
 		},
 	},
 	{
@@ -53,15 +60,16 @@ export const columns: ColumnDef<ContasColumns>[] = [
 				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
-							Remover
+							Remover conta
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
-						<DialogDescription>Cadastro de conta</DialogDescription>
 						<DialogHeader>
 							<DialogTitle>Confirmar Remoção</DialogTitle>
 						</DialogHeader>
-						<p>Tem certeza que deseja remover este item?</p>
+						<DialogDescription className="text-black">
+							Tem certeza que deseja remover esta conta?
+						</DialogDescription>
 						<DialogFooter>
 							<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
 								Cancelar
@@ -69,11 +77,11 @@ export const columns: ColumnDef<ContasColumns>[] = [
 							<Button
 								variant="destructive"
 								onClick={() => {
-									row.original.deleteConta(row.original.id);
+									row.original.deleteConta(row.original.conta_id);
 									setIsDialogOpen(false);
 								}}
 							>
-								Remover
+								Remover conta
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -83,6 +91,6 @@ export const columns: ColumnDef<ContasColumns>[] = [
 	},
 ];
 
-export default function ContasTable({ contas }: { contas: ContasColumns }) {
-	return <DataTable columns={columns} data={contas} searchFields={} />;
+export default function ContasTable({ contas }: { contas: ContasColumns[] }) {
+	return <DataTable columns={columns} data={contas} searchFields={["nome", "cpf"]} />;
 }

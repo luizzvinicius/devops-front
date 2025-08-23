@@ -1,7 +1,8 @@
-import { criarConta } from "@/api/conta";
-import { type ContaRequestDto, ContaResponseDto } from "@/models/conta-model";
+import { buscarPessoaEConta, buscarPessoasFilter } from "@/api/pessoas";
+import type { ContaRequestDto } from "@/models/conta-model";
+import { criarConta, deleteConta } from "@/api/conta";
 import type { PessoaPageDto } from "@/models/pessoa-model";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateConta() {
 	const queryClient = useQueryClient();
@@ -19,29 +20,105 @@ export function useCreateConta() {
 
 			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
 				if (!old) return;
+
 				const updated = old.pessoas.map(pessoa =>
-					pessoa.id === data.id
+					pessoa.id === Number(data.id)
 						? {
-								nome: pessoa.nome,
-								cpf: pessoa.cpf,
-								conta: [
-									{
-										id: data.id,
-										movimentacoes: data.movimentacoes,
-										numero: data.numero,
-										saldo: data.saldo,
-									},
-								],
+								...pessoa,
+								conta: [...pessoa.contas, data],
 							}
 						: pessoa,
 				);
 
 				return {
 					...old,
-					pessoas: [...updated],
-					totalElements: old.totalElements + 1,
+					pessoas: [...old.pessoas, updated],
+					pageSize: old.pageSize + 1,
 				};
 			});
 		},
 	});
 }
+
+export function useDeleteConta() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationKey: ["deleteConta"],
+		mutationFn: async (idConta?: string) => {
+			if (!idConta) return;
+			await deleteConta(idConta);
+		},
+
+		onError: e => {
+			console.log("Erro ao deletar conta:", e);
+		},
+
+		onSuccess: (data, idPessoa, idConta) => {
+			console.log(data, idPessoa, idConta);
+
+			if (!data) return;
+
+			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
+				if (!old) return;
+
+				const updated = old.pessoas.filter(pessoa => {
+					if (pessoa.id) {
+						pessoa.contas.filter(conta => conta.id !== idConta);
+					}
+				});
+
+				return {
+					...old,
+					pessoas: [...old.pessoas, updated],
+					pageSize: old.pageSize - 1,
+				};
+			});
+		},
+	});
+}
+
+export const usePessoasConta = (nome: string, page: number, enabled: boolean) => {
+	return useQuery({
+		initialData: {
+			pessoas: [],
+			pageSize: 0,
+			totalPages: 0,
+		},
+		enabled,
+		queryKey: ["pessoasFiltered"],
+		queryFn: async () => {
+			console.log("chamou");
+			const request = await buscarPessoasFilter(nome, page);
+			if (!request) {
+				return Promise.reject();
+			}
+			return request;
+		},
+	});
+};
+
+export const useBuscarPessoaEConta = (id: number) => {
+	return useQuery({
+		initialData: [
+			{
+				id: 0,
+				nome: "",
+				cpf: "",
+				endereco: "",
+				conta_id: "",
+				conta_saldo: 0,
+			},
+		],
+		enabled: id > 0,
+		queryKey: ["buscarPessoaEConta"],
+		queryFn: async () => {
+			console.log("chamou");
+			const request = await buscarPessoaEConta(id);
+			if (!request) {
+				return Promise.reject();
+			}
+			return request;
+		},
+	});
+};
