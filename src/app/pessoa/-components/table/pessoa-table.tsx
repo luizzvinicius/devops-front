@@ -105,12 +105,28 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 	},
 ];
 
-export default function PessoaDataTable(pessoas: { pessoas: PessoaColumn[] }) {
-	return (
-		<DataTable
-			columns={columns}
-			data={pessoas.pessoas}
-			searchFields={["nome", "cpf", "endereco"]}
-		/>
-	);
+type PessoaDataTableProps = {
+	pessoas: PessoaResponseDto[];
+	form: AnyFormApi;
+	isDialogOpen: boolean;
+	setIsDialogOpen: (open: boolean) => void;
+	deletePessoa: (id: number) => void;
+};
+
+export default function PessoaDataTable({
+	pessoas,
+	form,
+	isDialogOpen,
+	setIsDialogOpen,
+	deletePessoa,
+}: PessoaDataTableProps) {
+	const data = pessoas.map(pessoa => ({
+		...pessoa,
+		form,
+		isDialogOpen,
+		setIsDialogOpen,
+		deletePessoa,
+	}));
+
+	return <DataTable columns={columns} data={data} searchFields={["nome", "cpf", "endereco"]} />;
 }

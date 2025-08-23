@@ -151,13 +151,11 @@ export function CreatePessoaForm() {
 			</form>
 			<div className="h-[300px] overflow-y-auto">
 				<PessoaDataTable
-					pessoas={pessoasResponse.pessoas.map(pessoa => ({
-						...pessoa,
-						form,
-						isDialogOpen,
-						deletePessoa,
-						setIsDialogOpen,
-					}))}
+					pessoas={pessoasResponse.pessoas}
+					form={form}
+					isDialogOpen={isDialogOpen}
+					setIsDialogOpen={setIsDialogOpen}
+					deletePessoa={deletePessoa}
 				/>
 			</div>
 		</div>
