@@ -5,7 +5,7 @@ export type ContaRequestDto = {
 };
 
 export type ContaResponseDto = {
-	id: number;
+	id: string;
 	movimentacoes: MovimentacoesResponseDto[];
 	saldo: number;
 };

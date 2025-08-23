@@ -21,3 +21,8 @@ export type Pagination = {
 	pageSize: number;
 	totalPages: number;
 };
+
+export type PessoaContaRow = Pessoa & {
+	conta_id: string;
+	conta_saldo: number;
+};
