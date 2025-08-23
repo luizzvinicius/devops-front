@@ -8,3 +8,8 @@ export const criarConta = async (params: ContaRequestDto) => {
 	const { data } = await axios.post<ContaResponseDto>(`${BASE_URL}${ENTITY}`, params);
 	return data;
 };
+
+export async function deleteConta(id: string) {
+	const { data } = await axios.delete(`${BASE_URL}${ENTITY}/${id}`);
+	return data;
+}

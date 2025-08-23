@@ -1,6 +1,11 @@
 import axios from "axios";
 import { BASE_URL } from "@/constants/constants";
-import type { PessoaPageDto, PessoaRequestDto, PessoaResponseDto } from "@/models/pessoa-model";
+import type {
+	PessoaContaRow,
+	PessoaPageDto,
+	PessoaRequestDto,
+	PessoaResponseDto,
+} from "@/models/pessoa-model";
 
 const ENTITY = "/pessoa";
 
@@ -26,3 +31,15 @@ export const deletePessoa = async (id: number) => {
 	const { status } = await axios.delete(`${BASE_URL}${ENTITY}/${id}`);
 	return status;
 };
+
+export async function buscarPessoasFilter(nome: string, page: number) {
+	const { data } = await axios.get<PessoaPageDto>(`${BASE_URL}${ENTITY}/all/${nome}`, {
+		params: { page: page },
+	});
+	return data;
+}
+
+export async function buscarPessoaEConta(id: number) {
+	const { data } = await axios.get<PessoaContaRow[]>(`${BASE_URL}${ENTITY}/contas/${id}`);
+	return data;
+}
