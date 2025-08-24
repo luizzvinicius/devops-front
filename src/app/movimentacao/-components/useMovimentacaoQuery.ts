@@ -1,5 +1,6 @@
-import { createMovimentacao, type MovimentacoesRequestDto } from "@/api/movimentacoes";
-import type { PessoaPageDto } from "@/api/pessoas";
+import { createMovimentacao } from "@/api/movimentacoes";
+import type { MovimentacoesRequestDto } from "@/models/movimentacao-model";
+import type { PessoaPageDto } from "@/models/pessoa-model";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateMovimentacao() {
@@ -13,7 +14,7 @@ export function useCreateMovimentacao() {
 			console.log("Erro ao criar movimentacao:", e);
 		},
 
-		onSuccess: async data => {
+		onSuccess: data => {
 			if (!data) return;
 
 			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
@@ -29,7 +30,7 @@ export function useCreateMovimentacao() {
 											{
 												id: data.id,
 												valor: data.valor,
-												dataHora: data.dataHora,
+												dataHora: data.data,
 											},
 										],
 									},
@@ -41,9 +42,14 @@ export function useCreateMovimentacao() {
 				return {
 					...old,
 					pessoas: [...updated],
-					totalElements: old.totalElements + 1,
+					totalElements: old.pageSize + 1,
 				};
 			});
 		},
 	});
+}
+
+export function useDeleteMovimentacao() {
+	const queryClient = useQueryClient();
+	return useMutation({});
 }

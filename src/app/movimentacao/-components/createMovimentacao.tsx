@@ -1,14 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import { InputMask } from "@react-input/mask";
 import {
 	Select,
@@ -17,13 +10,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useGetPessoas } from "@/app/pessoa/-components/usePessoaQuery";
-import { useCreateMovimentacao } from "./useMovimentacaoQuery";
+import { useDeleteMovimentacao } from "./useMovimentacaoQuery";
 import { OperacaoEnum } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "@/components/ui/command";
+import { showCpfFormatted } from "@/utils/util";
+import { useRef, useState } from "react";
+import { usePessoasConta } from "@/app/conta/-components/useContaQuery";
+import MovimentacoesTable from "./table/MovimentacaoTable";
 import { z } from "zod";
+import { createMovimentacao } from "@/api/movimentacoes";
 
 export const OperacaoEnumSchema = z.enum(
 	Object.values(OperacaoEnum) as [OperacaoEnum, ...OperacaoEnum[]],
@@ -31,20 +38,9 @@ export const OperacaoEnumSchema = z.enum(
 
 const createMovimentacaoSchema = z
 	.object({
-		pessoa: z.object({
-			id: z.number(),
-			name: z.string().optional(),
-			cpf: z.string(),
-			address: z.string().optional(),
-		}),
-		conta: z.object({
-			id: z.number(),
-			saldo: z
-				.number()
-				.min(-1, "Saldo deve ser maior ou igual a zero")
-				.transform(val => Number(val)),
-		}),
-		valor: z.number(),
+		pessoa_id: z.number(),
+		conta_id: z.string(),
+		valor: z.number().positive(),
 		tipoMovimentacao: OperacaoEnumSchema,
 	})
 	.required();
@@ -52,24 +48,25 @@ const createMovimentacaoSchema = z
 export type CreateMovimentacaoType = z.infer<typeof createMovimentacaoSchema>;
 
 const nullFormState = {
-	pessoa: {
-		id: 0,
-		name: "",
-		cpf: "",
-		address: "",
-	},
-	conta: {
-		id: 0,
-		saldo: 0,
-	},
+	pessoa_id: 0,
+	conta_id: "",
 	valor: 0,
 	tipoMovimentacao: OperacaoEnum.DEPOSITO,
 };
 
 export function CreateMovimentacao() {
-	const { data: pessoasResponse, isFetching, error } = useGetPessoas(0);
+	const [open, setOpen] = useState<boolean>(false);
+	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+	const [value, setValue] = useState<string | undefined>("");
+	const [searchTerm, setSearchTerm] = useState("");
+	const [queryEnabled, setQueryEnabled] = useState(false);
 
-	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
+	const triggerRef = useRef<HTMLButtonElement>(null);
+
+	/*Queries */
+	const pessoasConta = usePessoasConta(searchTerm, 0, queryEnabled);
+	// const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
+	const deleteMovimentacao = useDeleteMovimentacao();
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -83,7 +80,7 @@ export function CreateMovimentacao() {
 
 	async function onSubmit(formData: CreateMovimentacaoType) {
 		await createMovimentacao({
-			contaId: formData.conta.id,
+			contaId: formData.conta_id,
 			tipoMovimentacao: formData.tipoMovimentacao.toString(),
 			valor: formData.valor,
 		});
@@ -99,89 +96,148 @@ export function CreateMovimentacao() {
 				}}
 				className="flex flex-col gap-y-4"
 			>
-				<form.Field name="pessoa">
+				<form.Field name="pessoa_id">
 					{field => (
 						<div>
 							<Label id="pessoa" className="text-xl">
 								Pessoa
 							</Label>
-							<Select
-								onValueChange={value => {
-									const selectedPessoa = pessoasResponse.pessoas.find(
-										item => String(item.id) === value,
-									);
-									if (selectedPessoa) {
-										onChange(selectedPessoa);
-										form.setValue("conta", selectedPessoa.contas[0]);
-									}
-								}}
-								value={
-									field.state.value.id ? String(field.state.value.id) : undefined
-								}
-							>
-								<SelectTrigger id="pessoa" className="w-[200px]">
-									<SelectValue placeholder="Selecione uma pessoa" />
-								</SelectTrigger>
-								<SelectContent>
-									{pessoasResponse.pessoas.map(item => (
-										<SelectItem key={item.id} value={String(item.id)}>
-											{item.nome} - {item.cpf}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<Popover open={open} onOpenChange={setOpen}>
+								<PopoverTrigger asChild>
+									<Button
+										ref={triggerRef}
+										variant="outline"
+										role="combobox"
+										aria-expanded={open}
+										className="w-1/2 justify-between"
+									>
+										{value
+											? pessoasConta.data?.pessoas.map(pessoa => {
+													return pessoa.id === Number(value)
+														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
+														: "";
+												})
+											: "Selecione uma pessoa"}
+										<ChevronsUpDown className="opacity-50" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent
+									className="p-1"
+									style={{
+										width: triggerRef.current
+											? triggerRef.current.offsetWidth
+											: undefined,
+									}}
+								>
+									<Command>
+										<CommandInput
+											placeholder="Digite o nome da pessoa"
+											onValueChange={setSearchTerm}
+										/>
+										<CommandList>
+											{pessoasConta.data.pessoas.length === 0 && (
+												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
+											)}
+											<CommandGroup>
+												{pessoasConta.data?.pessoas.map(pessoa => (
+													<CommandItem
+														key={pessoa.id}
+														value={pessoa.nome}
+														onSelect={_ => {
+															field.handleChange(pessoa.id);
+															setValue(String(pessoa.id));
+															setOpen(false);
+														}}
+													>
+														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
+														<Check
+															className={cn(
+																"ml-auto",
+																Number(value) === pessoa.id
+																	? "opacity-100"
+																	: "opacity-0",
+															)}
+														/>
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
 					)}
 				</form.Field>
-				<form.Field name="conta">
+				<form.Field name="conta_id">
 					{field => (
 						<div>
 							<Label htmlFor="conta" className="text-xl">
 								Conta
 							</Label>
-							<Select
-								onValueChange={value => {
-									const selectedConta = pessoasResponse.pessoas.find(
-										item => String(item.contas[0].id) === value,
-									);
-									field.onChange(selectedConta?.contas[0]);
-								}}
-								value={
-									pessoasResponse.pessoas.find(
-										pessoa =>
-											String(pessoa.contas[0].id) ===
-											String(field.state.value),
-									)?.contas
-								}
-							>
-								<SelectTrigger className="w-[200px]">
-									<SelectValue placeholder="Selecione uma conta" />
-								</SelectTrigger>
-								<SelectContent id="conta">
-									{form.state.values.pessoa.id
-										? pessoasResponse.pessoas
-												.filter(
-													item => item.id === form.state.values.pessoa.id,
-												)
-												.map(item => (
-													<SelectItem
-														key={item.contas[0].id}
-														value={String(item.contas[0].id)}
+							<Popover open={open} onOpenChange={setOpen}>
+								<PopoverTrigger asChild>
+									<Button
+										ref={triggerRef}
+										variant="outline"
+										role="combobox"
+										aria-expanded={open}
+										className="w-1/2 justify-between"
+									>
+										{value
+											? pessoasConta.data?.pessoas.map(pessoa => {
+													return pessoa.id === Number(value)
+														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
+														: "";
+												})
+											: "Selecione uma pessoa"}
+										<ChevronsUpDown className="opacity-50" />
+									</Button>
+								</PopoverTrigger>
+								<PopoverContent
+									className="p-1"
+									style={{
+										width: triggerRef.current
+											? triggerRef.current.offsetWidth
+											: undefined,
+									}}
+								>
+									<Command>
+										<CommandInput
+											placeholder="Digite o nome da pessoa"
+											onValueChange={setSearchTerm}
+										/>
+										<CommandList>
+											{pessoasConta.data.pessoas.length === 0 && (
+												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
+											)}
+											<CommandGroup>
+												{pessoasConta.data?.pessoas.map(pessoa => (
+													<CommandItem
+														key={pessoa.id}
+														value={pessoa.nome}
+														onSelect={_ => {
+															field.handleChange(pessoa.id);
+															setValue(String(pessoa.id));
+															setOpen(false);
+														}}
 													>
-														{item.contas[0].id} - Saldo:{" "}
-														{item.contas[0].saldo.toLocaleString(
-															"pt-BR",
-															{
-																style: "currency",
-																currency: "BRL",
-															},
-														)}
-													</SelectItem>
-												))
-										: null}
-								</SelectContent>
-							</Select>
+														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
+														<Check
+															className={cn(
+																"ml-auto",
+																Number(value) === pessoa.id
+																	? "opacity-100"
+																	: "opacity-0",
+															)}
+														/>
+													</CommandItem>
+												))}
+											</CommandGroup>
+										</CommandList>
+									</Command>
+								</PopoverContent>
+							</Popover>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
 					)}
@@ -202,7 +258,7 @@ export function CreateMovimentacao() {
 								value={field.state.value === 0 ? "" : field.state.value}
 								onChange={e => {
 									const numericValue = e.target.value.replace(/\D/g, "");
-									field.onChange(
+									field.handleChange(
 										numericValue ? Number.parseInt(numericValue, 10) : 0,
 									);
 								}}
@@ -215,11 +271,11 @@ export function CreateMovimentacao() {
 					{field => (
 						<div>
 							<Label id="movimentacao" className="text-xl">
-								Movimentacao
+								Movimentação
 							</Label>
 							<Select
 								onValueChange={value => {
-									field.onChange(value);
+									field.handleChange(value);
 								}}
 								value={field.state.value}
 							>
@@ -243,44 +299,13 @@ export function CreateMovimentacao() {
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
-				{pessoasResponse.pessoas[form.state.values.pessoa.id] === undefined ? (
-					"sem transações"
-				) : (
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Data</TableHead>
-								<TableHead>Valor</TableHead>
-							</TableRow>
-						</TableHeader>
-
-						{/* {pessoasResponse.pessoas[0].conta[0].movimentacoes[0].dataHora === undefined
-						? "Sem transação"
-						: ""} */}
-						<TableBody>
-							{pessoasResponse.pessoas[form.state.values.pessoa.id].contas.map(
-								(item, index) => (
-									<TableRow key={item.id}>
-										<TableCell>
-											{item.movimentacoes === undefined ||
-											item.movimentacoes[0] === undefined
-												? "sem transações"
-												: item.movimentacoes[0].data.toString()}
-										</TableCell>
-										<TableCell>
-											{item.movimentacoes === undefined ||
-											item.movimentacoes[0] === undefined
-												? "sem transações"
-												: item.movimentacoes[0].data.toString()}
-										</TableCell>
-									</TableRow>
-								),
-							)}
-						</TableBody>
-					</Table>
-				)}
-
-				{/* <p>Saldo: {item.conta[0].movimentacoes[0].valor}</p> */}
+				<MovimentacoesTable
+					form={form}
+					deleteMovimentacao={deleteMovimentacao}
+					movimentacoes={[]}
+					isDialogOpen={isDialogOpen}
+					setIsDialogOpen={setIsDialogOpen}
+				/>
 			</div>
 		</div>
 	);

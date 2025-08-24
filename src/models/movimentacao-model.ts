@@ -18,3 +18,7 @@ export type MovimentacoesRequestDto = {
 };
 
 export type MovimentacoesResponseDto = Movimentacoes;
+
+export type MovimentacoesRow = MovimentacoesResponseDto & {
+	conta_id: string;
+};
