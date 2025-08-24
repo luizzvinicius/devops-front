@@ -12,14 +12,14 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import type { PessoaContaRow } from "@/models/pessoa-model";
 import { showCpfFormatted } from "@/utils/util";
+import type { PessoaContaResponse, PessoaEConta } from "@/models/pessoa-model";
 
-type ContasColumns = PessoaContaRow & {
+type ContasColumns = PessoaEConta & {
 	form: AnyFormApi;
 	isDialogOpen: boolean;
 	setIsDialogOpen: (isDialogOpen: boolean) => void;
-	deleteConta: (id?: string) => void;
+	deleteConta: (id: string) => void;
 };
 
 export const columns: ColumnDef<ContasColumns>[] = [
@@ -91,6 +91,28 @@ export const columns: ColumnDef<ContasColumns>[] = [
 	},
 ];
 
-export default function ContasTable({ contas }: { contas: ContasColumns[] }) {
-	return <DataTable columns={columns} data={contas} searchFields={["nome", "cpf"]} />;
+export default function ContasTable({
+	pessoaConta,
+	form,
+	isDialogOpen,
+	setIsDialogOpen,
+	deleteConta,
+}: {
+	pessoaConta: PessoaContaResponse;
+	form: AnyFormApi;
+	isDialogOpen: boolean;
+	setIsDialogOpen: (isDialogOpen: boolean) => void;
+	deleteConta: (id: string) => void;
+}) {
+	const data =
+		pessoaConta.pageSize === 0
+			? []
+			: pessoaConta.pessoaAndContaDtoList.map(pessoa => ({
+					...pessoa,
+					form,
+					isDialogOpen,
+					setIsDialogOpen,
+					deleteConta,
+				}));
+	return <DataTable columns={columns} data={data} searchFields={["nome", "cpf"]} />;
 }
