@@ -19,7 +19,7 @@ export type PessoaPageDto = {
 
 export type Pagination = {
 	pageSize: number;
-	totalPages: number;
+	totalElements: number;
 };
 
 export type PessoaEConta = Pessoa & {
