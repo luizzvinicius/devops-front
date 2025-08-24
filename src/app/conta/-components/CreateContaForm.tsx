@@ -28,7 +28,7 @@ import type { PessoaPageDto } from "@/models/pessoa-model";
 
 const createContaSchema = z
 	.object({
-		id: z.number(),
+		id: z.number().positive("Nenhuma pessoa selecionada"),
 	})
 	.required();
 
