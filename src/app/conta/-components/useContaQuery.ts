@@ -17,45 +17,44 @@ export function useCreateConta() {
 
 		onSuccess: (createdAccount, pessoaId) => {
 			queryClient.setQueryData(["buscarPessoaEConta"], (old: PessoaContaResponse) => {
-				console.log(old);
-
 				if (old.pessoaAndContaDtoList.length === 0) {
-					console.log("aqui");
-
 					const pessoas: PessoaPageDto | undefined = queryClient.getQueryData([
 						"pessoasFiltered",
 					]);
 					if (!createdAccount || !pessoaId || !pessoas) return;
 					const pessoa = pessoas.pessoas.find(p => p.id === pessoaId.pessoaId);
 					if (!pessoa) return;
-					console.log(pessoa);
-
 					return {
 						pessoaAndContaDtoList: [
 							{
 								id: pessoa.id,
-								nome: pessoa?.nome,
-								cpf: pessoa?.cpf,
-								endereco: pessoa?.endereco,
+								nome: pessoa.nome,
+								cpf: pessoa.cpf,
+								endereco: pessoa.endereco,
 								conta_id: createdAccount.id,
 								conta_saldo: createdAccount.saldo,
 							},
 						],
-						pageSize: 1,
-						totalPages: 1,
+						pageSize: old.pageSize + 1,
+						totalElements: old.totalElements + 1,
 					};
 				}
 
+				const baseRegister = old.pessoaAndContaDtoList[0];
+
 				const updatedPessoaEConta = {
-					...old.pessoaAndContaDtoList[0],
+					id: baseRegister.id,
+					nome: baseRegister.nome,
+					cpf: baseRegister.cpf,
+					endereco: baseRegister.endereco,
 					conta_id: createdAccount.id,
 					conta_saldo: createdAccount.saldo,
 				};
 
 				return {
-					page: old.totalPages,
-					pageSize: old.pageSize + 1,
 					pessoaAndContaDtoList: [...old.pessoaAndContaDtoList, updatedPessoaEConta],
+					pageSize: old.pageSize + 1,
+					totalElements: old.totalElements + 1,
 				};
 			});
 		},
@@ -76,20 +75,16 @@ export function useDeleteConta() {
 		},
 
 		onSuccess: (_, idConta) => {
-			queryClient.setQueryData(["pessoas"], (old: PessoaContaResponse) => {
-				console.log(old);
+			queryClient.setQueryData(["buscarPessoaEConta"], (old: PessoaContaResponse) => {
 				if (!old) return;
-
-				const updated = old.pessoas.filter(pessoa => {
-					if (pessoa.id) {
-						pessoa.contas.filter(conta => conta.id !== idConta);
-					}
-				});
+				const updated = old.pessoaAndContaDtoList.filter(
+					pessoa => pessoa.conta_id !== idConta,
+				);
 
 				return {
-					...old,
-					pessoas: [...old.pessoas, updated],
+					pessoaAndContaDtoList: [...updated],
 					pageSize: old.pageSize - 1,
+					totalElements: old.totalElements - 1,
 				};
 			});
 		},
@@ -101,7 +96,7 @@ export const usePessoasConta = (nome: string, page: number) => {
 		initialData: {
 			pessoas: [],
 			pageSize: 0,
-			totalPages: 0,
+			totalElements: 0,
 		},
 
 		enabled: nome.length > 0,
@@ -130,12 +125,11 @@ export const useBuscarPessoaEConta = (id: number) => {
 				},
 			],
 			pageSize: 0,
-			totalPages: 0,
+			totalElements: 0,
 		},
 		enabled: id > 0,
 		queryKey: ["buscarPessoaEConta"],
 		queryFn: async () => {
-			console.log("chamou");
 			const request = await buscarPessoaEConta(id);
 			if (!request) {
 				return Promise.reject();
