@@ -43,15 +43,18 @@ export function CreateConta() {
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
+	// const { data: pessoasResponse } = useGetPessoas(0); // não remover
 	const pessoasConta = usePessoasConta(searchTerm, 0, queryEnabled);
 	const { mutateAsync: createConta } = useCreateConta();
 	const { data: pessoaEConta } = useBuscarPessoaEConta(Number(value));
-	const deleteConta = useDeleteConta();
+	const { mutateAsync: deleteConta } = useDeleteConta();
 
 	useEffect(() => {
 		const handler = setTimeout(() => {
 			if (searchTerm.length > 0) {
 				setQueryEnabled(true);
+			} else {
+				setQueryEnabled(false);
 			}
 		}, 600);
 		return () => clearTimeout(handler);
@@ -68,8 +71,6 @@ export function CreateConta() {
 	});
 
 	async function onSubmit(formData: z.infer<typeof createContaSchema>) {
-		console.log(formData);
-
 		await createConta({
 			pessoaId: formData.id,
 		});
@@ -166,19 +167,13 @@ export function CreateConta() {
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
-				{pessoaEConta[0]?.nome !== "" ? (
-					<ContasTable
-						contas={pessoaEConta.map(pessoa => ({
-							...pessoa,
-							form,
-							isDialogOpen,
-							setIsDialogOpen,
-							deleteConta: (id?: string) => deleteConta.mutate(id),
-						}))}
-					/>
-				) : (
-					<ContasTable contas={[]} />
-				)}
+				<ContasTable
+					pessoaConta={pessoaEConta}
+					form={form}
+					isDialogOpen={isDialogOpen}
+					setIsDialogOpen={setIsDialogOpen}
+					deleteConta={deleteConta}
+				/>
 			</div>
 		</div>
 	);

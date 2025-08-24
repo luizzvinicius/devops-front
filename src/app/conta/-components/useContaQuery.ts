@@ -1,39 +1,48 @@
-import { buscarPessoaEConta, buscarPessoasFilter } from "@/api/pessoas";
 import type { ContaRequestDto } from "@/models/conta-model";
+import { buscarPessoaEConta, buscarPessoasFilter } from "@/api/pessoas";
 import { criarConta, deleteConta } from "@/api/conta";
-import type { PessoaPageDto } from "@/models/pessoa-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { PessoaContaResponse, PessoaPageDto } from "@/models/pessoa-model";
 
 export function useCreateConta() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationKey: ["createConta"],
+		mutationKey: ["buscarPessoaEConta"],
 		mutationFn: async (data: ContaRequestDto) => await criarConta(data),
 
 		onError: e => {
 			console.log("Erro ao criar conta:", e);
 		},
 
-		onSuccess: data => {
-			if (!data) return;
+		onSuccess: (createdAccount, pessoaId) => {
+			const pessoas: PessoaPageDto | undefined = queryClient.getQueryData(["pessoas"]);
+			if (!createdAccount || !pessoaId || !pessoas) return;
 
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
-				if (!old) return;
+			const pessoa = pessoas.pessoas.find(p => p.id === pessoaId.pessoaId);
+			console.log("pessoa encontrada", pessoa);
 
-				const updated = old.pessoas.map(pessoa =>
-					pessoa.id === Number(data.id)
+			queryClient.setQueryDefaults(["buscarPessoaEConta"], {
+				enabled: true,
+			});
+			queryClient.setQueryData(["buscarPessoaEConta"], (old: PessoaContaResponse) => {
+				console.log(old);
+
+				const updatedPessoaEConta = old.pessoaAndContaDtoList.map(p =>
+					p.id === pessoa?.id
 						? {
-								...pessoa,
-								conta: [...pessoa.contas, data],
+								...p,
+								conta_id: createdAccount.id,
+								conta_saldo: createdAccount.saldo,
 							}
-						: pessoa,
+						: p,
 				);
+				console.log(updatedPessoaEConta);
 
 				return {
-					...old,
-					pessoas: [...old.pessoas, updated],
-					pageSize: old.pageSize + 1,
+					page: 0,
+					pageSize: 1,
+					pessoaAndContaDtoList: [...old.pessoaAndContaDtoList, ...updatedPessoaEConta],
 				};
 			});
 		},
@@ -45,8 +54,7 @@ export function useDeleteConta() {
 
 	return useMutation({
 		mutationKey: ["deleteConta"],
-		mutationFn: async (idConta?: string) => {
-			if (!idConta) return;
+		mutationFn: async (idConta: string) => {
 			await deleteConta(idConta);
 		},
 
@@ -54,12 +62,9 @@ export function useDeleteConta() {
 			console.log("Erro ao deletar conta:", e);
 		},
 
-		onSuccess: (data, idPessoa, idConta) => {
-			console.log(data, idPessoa, idConta);
-
-			if (!data) return;
-
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
+		onSuccess: (_, idConta) => {
+			queryClient.setQueryData(["pessoas"], (old: PessoaContaResponse) => {
+				console.log(old);
 				if (!old) return;
 
 				const updated = old.pessoas.filter(pessoa => {
@@ -100,16 +105,20 @@ export const usePessoasConta = (nome: string, page: number, enabled: boolean) =>
 
 export const useBuscarPessoaEConta = (id: number) => {
 	return useQuery({
-		initialData: [
-			{
-				id: 0,
-				nome: "",
-				cpf: "",
-				endereco: "",
-				conta_id: "",
-				conta_saldo: 0,
-			},
-		],
+		initialData: {
+			pessoaAndContaDtoList: [
+				{
+					conta_id: "",
+					conta_saldo: 0,
+					cpf: "",
+					endereco: "",
+					id: 0,
+					nome: "",
+				},
+			],
+			pageSize: 0,
+			totalPages: 0,
+		},
 		enabled: id > 0,
 		queryKey: ["buscarPessoaEConta"],
 		queryFn: async () => {
