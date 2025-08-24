@@ -1,5 +1,5 @@
 import QueryProvider from "@/providers/tsQuery";
-import { CreateConta } from "./-components/createConta";
+import { CreateConta } from "./-components/CreateContaForm";
 
 export default function CreateAccount() {
 	return (

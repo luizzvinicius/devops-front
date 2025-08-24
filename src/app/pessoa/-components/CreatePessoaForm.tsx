@@ -7,7 +7,7 @@ import { useForm } from "@tanstack/react-form";
 import { useCreatePessoa, useDeletePessoa, useGetPessoas, useUpdatePessoa } from "./usePessoaQuery";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/forms/FieldInfo";
-import PessoaDataTable from "./table/pessoa-table";
+import PessoaDataTable from "./table/PessoaTable";
 
 export const createPessoaSchema = z
 	.object({
