@@ -13,16 +13,18 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { showCpfFormatted } from "@/utils/util";
-import type { PessoaContaResponse, PessoaEConta } from "@/models/pessoa-model";
+import type { PessoaEConta } from "@/models/pessoa-model";
+import { useState } from "react";
 
-type ContasColumns = PessoaEConta & {
+type ContasTableRow = PessoaEConta & {
 	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (isDialogOpen: boolean) => void;
-	deleteConta: (id: string) => void;
 };
 
-export const columns: ColumnDef<ContasColumns>[] = [
+export const columns = (
+	openDialogId: string | null,
+	setOpenDialogId: (id: string | null) => void,
+	deleteConta: (id: string) => void,
+): ColumnDef<ContasTableRow>[] => [
 	{
 		accessorKey: "nome",
 		header: "Nome",
@@ -54,10 +56,12 @@ export const columns: ColumnDef<ContasColumns>[] = [
 	{
 		header: "Remover",
 		cell: ({ row }) => {
-			const isDialogOpen = row.original.isDialogOpen;
-			const setIsDialogOpen = row.original.setIsDialogOpen;
+			const contaId = row.original.conta_id;
 			return (
-				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<Dialog
+					open={openDialogId === contaId}
+					onOpenChange={open => setOpenDialogId(open ? contaId : null)}
+				>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
 							Remover conta
@@ -71,14 +75,14 @@ export const columns: ColumnDef<ContasColumns>[] = [
 							Tem certeza que deseja remover esta conta?
 						</DialogDescription>
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+							<Button variant="outline" onClick={() => setOpenDialogId(null)}>
 								Cancelar
 							</Button>
 							<Button
 								variant="destructive"
 								onClick={() => {
-									row.original.deleteConta(row.original.conta_id);
-									setIsDialogOpen(false);
+									deleteConta(contaId);
+									setOpenDialogId(null);
 								}}
 							>
 								Remover conta
@@ -94,25 +98,26 @@ export const columns: ColumnDef<ContasColumns>[] = [
 export default function ContasTable({
 	pessoaConta,
 	form,
-	isDialogOpen,
-	setIsDialogOpen,
 	deleteConta,
 }: {
 	pessoaConta: PessoaEConta[];
 	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (isDialogOpen: boolean) => void;
 	deleteConta: (id: string) => void;
 }) {
-	const data =
-		//pessoaConta.pageSize === 0
-		//	? []
-		pessoaConta.map(pessoa => ({
-			...pessoa,
-			form,
-			isDialogOpen,
-			setIsDialogOpen,
-			deleteConta,
-		}));
-	return <DataTable columns={columns} data={data} searchFields={["nome", "cpf"]} />;
+	const [openDialogId, setOpenDialogId] = useState<string | null>(null);
+	const data: ContasTableRow[] =
+		pessoaConta[0]?.nome === ""
+			? []
+			: pessoaConta.map(pessoa => ({
+					...pessoa,
+					form,
+				}));
+
+	return (
+		<DataTable
+			columns={columns(openDialogId, setOpenDialogId, deleteConta)}
+			data={data}
+			searchFields={["nome", "cpf"]}
+		/>
+	);
 }

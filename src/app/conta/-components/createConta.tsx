@@ -25,7 +25,6 @@ import { showCpfFormatted } from "@/utils/util";
 import { z } from "zod";
 import ContasTable from "./table/ContasTable";
 import type { PessoaPageDto } from "@/models/pessoa-model";
-import { buscarPessoasFilter } from "@/api/pessoas";
 
 const createContaSchema = z
 	.object({
@@ -37,7 +36,6 @@ const nullFormState = {
 	id: 0,
 };
 export function CreateConta() {
-	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const [value, setValue] = useState<string | undefined>("");
@@ -176,8 +174,6 @@ export function CreateConta() {
 				<ContasTable
 					pessoaConta={pessoaEConta.pessoaAndContaDtoList}
 					form={form}
-					isDialogOpen={isDialogOpen}
-					setIsDialogOpen={setIsDialogOpen}
 					deleteConta={deleteConta}
 				/>
 			</div>
