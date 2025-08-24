@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { InputMask } from "@react-input/mask";
-import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { useCreatePessoa, useDeletePessoa, useGetPessoas, useUpdatePessoa } from "./usePessoaQuery";
 import { Label } from "@/components/ui/label";
@@ -41,8 +40,6 @@ const nullFormState = {
 };
 
 export function CreatePessoaForm() {
-	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-
 	const { data: pessoasResponse } = useGetPessoas(0);
 	const { mutateAsync: createPessoa } = useCreatePessoa();
 	const { mutateAsync: deletePessoa } = useDeletePessoa();
@@ -153,8 +150,6 @@ export function CreatePessoaForm() {
 				<PessoaDataTable
 					pessoas={pessoasResponse.pessoas}
 					form={form}
-					isDialogOpen={isDialogOpen}
-					setIsDialogOpen={setIsDialogOpen}
 					deletePessoa={deletePessoa}
 				/>
 			</div>

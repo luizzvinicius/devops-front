@@ -14,15 +14,17 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { showCpfFormatted } from "@/utils/util";
+import { useState } from "react";
 
 type PessoaColumn = PessoaResponseDto & {
 	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (isDialogOpen: boolean) => void;
-	deletePessoa: (id: number) => void;
 };
 
-export const columns: ColumnDef<PessoaColumn>[] = [
+export const columns = (
+	openDialogId: number | null,
+	setOpenDialogId: (id: number | null) => void,
+	deletePessoa: (id: number) => void,
+): ColumnDef<PessoaColumn>[] => [
 	{
 		accessorKey: "nome",
 		header: "Nome",
@@ -69,10 +71,12 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 	{
 		header: "Remover",
 		cell: ({ row }) => {
-			const isDialogOpen = row.original.isDialogOpen;
-			const setIsDialogOpen = row.original.setIsDialogOpen;
+			const pessoaId = row.original.id;
 			return (
-				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<Dialog
+					open={openDialogId === pessoaId}
+					onOpenChange={open => setOpenDialogId(open ? pessoaId : null)}
+				>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
 							Remover
@@ -85,14 +89,14 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 						</DialogHeader>
 						<p>Tem certeza que deseja remover este item?</p>
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+							<Button variant="outline" onClick={() => setOpenDialogId(null)}>
 								Cancelar
 							</Button>
 							<Button
 								variant="destructive"
 								onClick={() => {
-									row.original.deletePessoa(row.original.id);
-									setIsDialogOpen(false);
+									deletePessoa(pessoaId);
+									setOpenDialogId(null);
 								}}
 							>
 								Remover
@@ -105,28 +109,26 @@ export const columns: ColumnDef<PessoaColumn>[] = [
 	},
 ];
 
-type PessoaDataTableProps = {
-	pessoas: PessoaResponseDto[];
-	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (open: boolean) => void;
-	deletePessoa: (id: number) => void;
-};
-
 export default function PessoaDataTable({
 	pessoas,
 	form,
-	isDialogOpen,
-	setIsDialogOpen,
 	deletePessoa,
-}: PessoaDataTableProps) {
+}: {
+	pessoas: PessoaResponseDto[];
+	form: AnyFormApi;
+	deletePessoa: (id: number) => void;
+}) {
+	const [openDialogId, setOpenDialogId] = useState<number | null>(null);
 	const data = pessoas.map(pessoa => ({
 		...pessoa,
 		form,
-		isDialogOpen,
-		setIsDialogOpen,
-		deletePessoa,
 	}));
 
-	return <DataTable columns={columns} data={data} searchFields={["nome", "cpf", "endereco"]} />;
+	return (
+		<DataTable
+			columns={columns(openDialogId, setOpenDialogId, deletePessoa)}
+			data={data}
+			searchFields={["nome", "cpf", "endereco"]}
+		/>
+	);
 }
