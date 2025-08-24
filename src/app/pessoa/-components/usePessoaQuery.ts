@@ -7,7 +7,7 @@ export const useGetPessoas = (page: number) => {
 		initialData: {
 			pessoas: [],
 			pageSize: 0,
-			totalPages: 0,
+			totalElements: 0,
 		},
 		queryKey: ["pessoas"],
 		queryFn: async () => {
@@ -39,7 +39,7 @@ export function useCreatePessoa() {
 					return {
 						pessoas: [data],
 						pageSize: 1,
-						totalPages: 0,
+						totalElements: 0,
 					};
 				}
 
@@ -47,6 +47,7 @@ export function useCreatePessoa() {
 					...old,
 					pessoas: [...old.pessoas, data],
 					pageSize: old.pageSize + 1,
+					totalElements: old.totalElements + 1,
 				};
 			});
 		},
@@ -102,6 +103,7 @@ export function useDeletePessoa() {
 					...old,
 					pessoas: [...updated],
 					pageSize: old.pageSize - 1,
+					totalElements: old.totalElements - 1,
 				};
 			});
 		},
