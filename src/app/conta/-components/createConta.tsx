@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { showCpfFormatted } from "@/utils/util";
 import { z } from "zod";
 import ContasTable from "./table/ContasTable";
+import type { PessoaPageDto } from "@/models/pessoa-model";
+import { buscarPessoasFilter } from "@/api/pessoas";
 
 const createContaSchema = z
 	.object({
@@ -37,28 +39,35 @@ const nullFormState = {
 export function CreateConta() {
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [searchTerm, setSearchTerm] = useState("");
-	const [queryEnabled, setQueryEnabled] = useState(false);
 	const [open, setOpen] = useState(false);
 	const [value, setValue] = useState<string | undefined>("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [filteredPessoa, setFilteredPessoa] = useState<PessoaPageDto>();
 
 	/*Queries */
-	// const { data: pessoasResponse } = useGetPessoas(0); // não remover
-	const pessoasConta = usePessoasConta(searchTerm, 0, queryEnabled);
+	const pessoasContas = usePessoasConta(searchTerm, 0);
 	const { mutateAsync: createConta } = useCreateConta();
-	const { data: pessoaEConta } = useBuscarPessoaEConta(Number(value));
+	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
+		Number(value),
+	);
 	const { mutateAsync: deleteConta } = useDeleteConta();
 
 	useEffect(() => {
-		const handler = setTimeout(() => {
+		const handler = setTimeout(async () => {
 			if (searchTerm.length > 0) {
-				setQueryEnabled(true);
+				try {
+					const result = pessoasContas.data;
+					setFilteredPessoa(result);
+					await updateBuscarPessoaEConta();
+				} catch (_) {
+					setFilteredPessoa(undefined);
+				}
 			} else {
-				setQueryEnabled(false);
+				setFilteredPessoa(undefined);
 			}
-		}, 600);
+		}, 1000);
 		return () => clearTimeout(handler);
-	}, [searchTerm]);
+	}, [searchTerm, updateBuscarPessoaEConta, pessoasContas]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -74,9 +83,6 @@ export function CreateConta() {
 		await createConta({
 			pessoaId: formData.id,
 		});
-
-		setValue("");
-		form.reset(nullFormState);
 	}
 
 	return (
@@ -105,7 +111,7 @@ export function CreateConta() {
 										className="w-1/2 justify-between"
 									>
 										{value
-											? pessoasConta.data?.pessoas.map(pessoa => {
+											? filteredPessoa?.pessoas.map(pessoa => {
 													return pessoa.id === Number(value)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
 														: "";
@@ -128,11 +134,11 @@ export function CreateConta() {
 											onValueChange={setSearchTerm}
 										/>
 										<CommandList>
-											{pessoasConta.data.pessoas.length === 0 && (
+											{filteredPessoa?.pessoas.length === 0 && (
 												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
-												{pessoasConta.data?.pessoas.map(pessoa => (
+												{filteredPessoa?.pessoas.map(pessoa => (
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
@@ -168,7 +174,7 @@ export function CreateConta() {
 			</form>
 			<div className="h-[300px] overflow-y-auto">
 				<ContasTable
-					pessoaConta={pessoaEConta}
+					pessoaConta={pessoaEConta.pessoaAndContaDtoList}
 					form={form}
 					isDialogOpen={isDialogOpen}
 					setIsDialogOpen={setIsDialogOpen}

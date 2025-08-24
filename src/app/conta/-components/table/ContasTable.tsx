@@ -98,21 +98,21 @@ export default function ContasTable({
 	setIsDialogOpen,
 	deleteConta,
 }: {
-	pessoaConta: PessoaContaResponse;
+	pessoaConta: PessoaEConta[];
 	form: AnyFormApi;
 	isDialogOpen: boolean;
 	setIsDialogOpen: (isDialogOpen: boolean) => void;
 	deleteConta: (id: string) => void;
 }) {
 	const data =
-		pessoaConta.pageSize === 0
-			? []
-			: pessoaConta.pessoaAndContaDtoList.map(pessoa => ({
-					...pessoa,
-					form,
-					isDialogOpen,
-					setIsDialogOpen,
-					deleteConta,
-				}));
+		//pessoaConta.pageSize === 0
+		//	? []
+		pessoaConta.map(pessoa => ({
+			...pessoa,
+			form,
+			isDialogOpen,
+			setIsDialogOpen,
+			deleteConta,
+		}));
 	return <DataTable columns={columns} data={data} searchFields={["nome", "cpf"]} />;
 }

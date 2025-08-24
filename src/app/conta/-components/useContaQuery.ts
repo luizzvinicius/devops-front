@@ -16,33 +16,46 @@ export function useCreateConta() {
 		},
 
 		onSuccess: (createdAccount, pessoaId) => {
-			const pessoas: PessoaPageDto | undefined = queryClient.getQueryData(["pessoas"]);
-			if (!createdAccount || !pessoaId || !pessoas) return;
-
-			const pessoa = pessoas.pessoas.find(p => p.id === pessoaId.pessoaId);
-			console.log("pessoa encontrada", pessoa);
-
-			queryClient.setQueryDefaults(["buscarPessoaEConta"], {
-				enabled: true,
-			});
 			queryClient.setQueryData(["buscarPessoaEConta"], (old: PessoaContaResponse) => {
 				console.log(old);
 
-				const updatedPessoaEConta = old.pessoaAndContaDtoList.map(p =>
-					p.id === pessoa?.id
-						? {
-								...p,
+				if (old.pessoaAndContaDtoList.length === 0) {
+					console.log("aqui");
+
+					const pessoas: PessoaPageDto | undefined = queryClient.getQueryData([
+						"pessoasFiltered",
+					]);
+					if (!createdAccount || !pessoaId || !pessoas) return;
+					const pessoa = pessoas.pessoas.find(p => p.id === pessoaId.pessoaId);
+					if (!pessoa) return;
+					console.log(pessoa);
+
+					return {
+						pessoaAndContaDtoList: [
+							{
+								id: pessoa.id,
+								nome: pessoa?.nome,
+								cpf: pessoa?.cpf,
+								endereco: pessoa?.endereco,
 								conta_id: createdAccount.id,
 								conta_saldo: createdAccount.saldo,
-							}
-						: p,
-				);
-				console.log(updatedPessoaEConta);
+							},
+						],
+						pageSize: 1,
+						totalPages: 1,
+					};
+				}
+
+				const updatedPessoaEConta = {
+					...old.pessoaAndContaDtoList[0],
+					conta_id: createdAccount.id,
+					conta_saldo: createdAccount.saldo,
+				};
 
 				return {
-					page: 0,
-					pageSize: 1,
-					pessoaAndContaDtoList: [...old.pessoaAndContaDtoList, ...updatedPessoaEConta],
+					page: old.totalPages,
+					pageSize: old.pageSize + 1,
+					pessoaAndContaDtoList: [...old.pessoaAndContaDtoList, updatedPessoaEConta],
 				};
 			});
 		},
@@ -83,17 +96,17 @@ export function useDeleteConta() {
 	});
 }
 
-export const usePessoasConta = (nome: string, page: number, enabled: boolean) => {
+export const usePessoasConta = (nome: string, page: number) => {
 	return useQuery({
 		initialData: {
 			pessoas: [],
 			pageSize: 0,
 			totalPages: 0,
 		},
-		enabled,
+
+		enabled: nome.length > 0,
 		queryKey: ["pessoasFiltered"],
 		queryFn: async () => {
-			console.log("chamou");
 			const request = await buscarPessoasFilter(nome, page);
 			if (!request) {
 				return Promise.reject();
