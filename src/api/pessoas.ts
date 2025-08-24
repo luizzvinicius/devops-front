@@ -1,7 +1,7 @@
 import axios from "axios";
 import { BASE_URL } from "@/constants/constants";
 import type {
-	PessoaContaRow,
+	PessoaContaResponse,
 	PessoaPageDto,
 	PessoaRequestDto,
 	PessoaResponseDto,
@@ -40,6 +40,6 @@ export async function buscarPessoasFilter(nome: string, page: number) {
 }
 
 export async function buscarPessoaEConta(id: number) {
-	const { data } = await axios.get<PessoaContaRow[]>(`${BASE_URL}${ENTITY}/contas/${id}`);
+	const { data } = await axios.get<PessoaContaResponse>(`${BASE_URL}${ENTITY}/contas/${id}`);
 	return data;
 }

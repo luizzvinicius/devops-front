@@ -22,7 +22,11 @@ export type Pagination = {
 	totalPages: number;
 };
 
-export type PessoaContaRow = Pessoa & {
+export type PessoaEConta = Pessoa & {
 	conta_id: string;
 	conta_saldo: number;
+};
+
+export type PessoaContaResponse = Pagination & {
+	pessoaAndContaDtoList: PessoaEConta[];
 };
