@@ -11,7 +11,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useDeleteMovimentacao } from "./useMovimentacaoQuery";
-import { OperacaoEnum } from "@/models/movimentacao-model";
+import { Operacao, type OperacaoValue } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Label } from "@/components/ui/label";
@@ -32,26 +32,24 @@ import MovimentacoesTable from "./table/MovimentacaoTable";
 import { z } from "zod";
 import { createMovimentacao } from "@/api/movimentacoes";
 
-export const OperacaoEnumSchema = z.enum(
-	Object.values(OperacaoEnum) as [OperacaoEnum, ...OperacaoEnum[]],
-);
-
 const createMovimentacaoSchema = z
 	.object({
 		pessoa_id: z.number(),
 		conta_id: z.string(),
-		valor: z.number().positive(),
-		tipoMovimentacao: OperacaoEnumSchema,
+		valor: z.number().positive("Valor deve ser maior que 0"),
+		tipoMovimentacao: z
+			.enum(Object.values(Operacao) as [OperacaoValue])
+			.or(z.string().nonempty()),
 	})
 	.required();
 
 export type CreateMovimentacaoType = z.infer<typeof createMovimentacaoSchema>;
 
-const nullFormState = {
+const nullFormState: CreateMovimentacaoType = {
 	pessoa_id: 0,
 	conta_id: "",
 	valor: 0,
-	tipoMovimentacao: OperacaoEnum.DEPOSITO,
+	tipoMovimentacao: "",
 };
 
 export function CreateMovimentacao() {
@@ -59,14 +57,13 @@ export function CreateMovimentacao() {
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [value, setValue] = useState<string | undefined>("");
 	const [searchTerm, setSearchTerm] = useState("");
-	const [queryEnabled, setQueryEnabled] = useState(false);
 
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
-	const pessoasConta = usePessoasConta(searchTerm, 0, queryEnabled);
+	const pessoasConta = usePessoasConta(searchTerm, 0);
 	// const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
-	const deleteMovimentacao = useDeleteMovimentacao();
+	const { mutateAsync: deleteMovimentacao } = useDeleteMovimentacao();
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -79,9 +76,10 @@ export function CreateMovimentacao() {
 	});
 
 	async function onSubmit(formData: CreateMovimentacaoType) {
+		console.log(formData);
 		await createMovimentacao({
 			contaId: formData.conta_id,
-			tipoMovimentacao: formData.tipoMovimentacao.toString(),
+			tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
 			valor: formData.valor,
 		});
 	}
@@ -217,7 +215,7 @@ export function CreateMovimentacao() {
 														key={pessoa.id}
 														value={pessoa.nome}
 														onSelect={_ => {
-															field.handleChange(pessoa.id);
+															field.handleChange(String(pessoa.id));
 															setValue(String(pessoa.id));
 															setOpen(false);
 														}}
@@ -275,17 +273,17 @@ export function CreateMovimentacao() {
 							</Label>
 							<Select
 								onValueChange={value => {
-									field.handleChange(value);
+									field.handleChange(value as OperacaoValue);
 								}}
-								value={field.state.value}
+								value={field.state.value as OperacaoValue}
 							>
 								<SelectTrigger className="w-[180px]">
 									<SelectValue placeholder="Operação" />
 								</SelectTrigger>
 								<SelectContent>
-									{Object.values(OperacaoEnum).map(opr => (
-										<SelectItem key={opr} value={opr.toString()}>
-											{opr.toLowerCase()}
+									{Object.values(Operacao).map(opr => (
+										<SelectItem key={opr} value={opr}>
+											{opr}
 										</SelectItem>
 									))}
 								</SelectContent>

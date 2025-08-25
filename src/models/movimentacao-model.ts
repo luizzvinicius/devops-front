@@ -4,17 +4,23 @@ type Movimentacoes = {
 	data: Date;
 };
 
-export const OperacaoEnum = {
-	DEPOSITO: "DEPOSITO",
-	SAQUE: "SAQUE",
-} as const;
+// export enum OperacaoEnum {
+// 	DEPOSITO = "Depósito", SAQUE = "Saque"
+// }
 
-export type OperacaoEnum = (typeof OperacaoEnum)[keyof typeof OperacaoEnum];
+// export type Operacao = keyof typeof OperacaoEnum;
+
+export const Operacao = {
+	DEPOSITO: "DEPOSITO",
+	SAQUE: "SAQUE"
+} as const
+
+export type OperacaoValue = keyof typeof Operacao;
 
 export type MovimentacoesRequestDto = {
 	contaId: string;
 	valor: number;
-	tipoMovimentacao: OperacaoEnum;
+	tipoMovimentacao: OperacaoValue;
 };
 
 export type MovimentacoesResponseDto = Movimentacoes;
