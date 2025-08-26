@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
 	title: "Create Next App",
@@ -33,6 +34,7 @@ export default function RootLayout({
 					<main className="w-full max-w-4xl p-4 bg-white shadow-md rounded-2xl">
 						{children}
 					</main>
+					<Toaster richColors position="bottom-right" expand={true} />
 				</div>
 			</body>
 		</html>
