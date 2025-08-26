@@ -27,10 +27,6 @@ export function useCreatePessoa() {
 		mutationKey: ["createPessoa"],
 		mutationFn: async (data: PessoaRequestDto) => await createPessoa(data),
 
-		onError: e => {
-			console.error("Erro ao criar pessoa:", e);
-		},
-
 		onSuccess: data => {
 			if (!data) return;
 
@@ -61,10 +57,6 @@ export function useUpdatePessoa() {
 		mutationKey: ["updatePessoa"],
 		mutationFn: async ({ idparam, data }: { idparam: number; data: PessoaRequestDto }) =>
 			await updatePessoa(idparam, data),
-
-		onError: e => {
-			console.error("Erro ao atualizar pessoa:", e);
-		},
 
 		onSuccess: data => {
 			if (!data) return;

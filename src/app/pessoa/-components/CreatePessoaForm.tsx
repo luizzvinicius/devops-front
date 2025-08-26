@@ -1,13 +1,14 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
 import { InputMask } from "@react-input/mask";
 import { useForm } from "@tanstack/react-form";
 import { useCreatePessoa, useDeletePessoa, useGetPessoas, useUpdatePessoa } from "./usePessoaQuery";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import PessoaDataTable from "./table/PessoaTable";
+import { toast } from "sonner";
+import { z } from "zod";
 
 export const createPessoaSchema = z
 	.object({
@@ -62,15 +63,21 @@ export function CreatePessoaForm() {
 			cpf: parsed.cpf,
 			endereco: parsed.address,
 		};
-		console.log(parsed);
-
 		if (formData.id === 0) {
-			await createPessoa(pessoa);
+			try {
+				await createPessoa(pessoa);
+			} catch (_) {
+				toast.error("Erro ao criar pessoa");
+			}
 		} else {
-			await updatePessoa({
-				idparam: parsed.id,
-				data: pessoa,
-			});
+			try {
+				await updatePessoa({
+					idparam: parsed.id,
+					data: pessoa,
+				});
+			} catch (_) {
+				toast.error("Erro ao atualizar pessoa");
+			}
 		}
 		form.reset(nullFormState);
 	}
