@@ -10,7 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useDeleteMovimentacao } from "./useMovimentacaoQuery";
+import { useCreateMovimentacao, useDeleteMovimentacao } from "./useMovimentacaoQuery";
 import { Operacao, type OperacaoValue } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
@@ -29,8 +29,8 @@ import { showCpfFormatted } from "@/utils/util";
 import { useRef, useState } from "react";
 import { usePessoasConta } from "@/app/conta/-components/useContaQuery";
 import MovimentacoesTable from "./table/MovimentacaoTable";
+import { toast } from "sonner";
 import { z } from "zod";
-import { createMovimentacao } from "@/api/movimentacoes";
 
 const createMovimentacaoSchema = z
 	.object({
@@ -53,16 +53,16 @@ const nullFormState: CreateMovimentacaoType = {
 };
 
 export function CreateMovimentacao() {
-	const [open, setOpen] = useState<boolean>(false);
+	const [openPessoaPopOver, setOpenPessoaPopOver] = useState<boolean>(false);
+	const [openContaPopOver, setOpenContaPopOver] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [value, setValue] = useState<string | undefined>("");
 	const [searchTerm, setSearchTerm] = useState("");
-
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
 	const pessoasConta = usePessoasConta(searchTerm, 0);
-	// const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
+	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
 	const { mutateAsync: deleteMovimentacao } = useDeleteMovimentacao();
 
 	const form = useForm({
@@ -77,11 +77,16 @@ export function CreateMovimentacao() {
 
 	async function onSubmit(formData: CreateMovimentacaoType) {
 		console.log(formData);
-		await createMovimentacao({
-			contaId: formData.conta_id,
-			tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
-			valor: formData.valor,
-		});
+		try {
+			await createMovimentacao({
+				contaId: formData.conta_id,
+				tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
+				valor: formData.valor,
+			});
+		} catch (_) {
+			toast.error("Erro ao criar movimentação");
+		}
+		form.reset(nullFormState);
 	}
 
 	return (
@@ -100,13 +105,13 @@ export function CreateMovimentacao() {
 							<Label id="pessoa" className="text-xl">
 								Pessoa
 							</Label>
-							<Popover open={open} onOpenChange={setOpen}>
+							<Popover open={openPessoaPopOver} onOpenChange={setOpenPessoaPopOver}>
 								<PopoverTrigger asChild>
 									<Button
 										ref={triggerRef}
 										variant="outline"
 										role="combobox"
-										aria-expanded={open}
+										aria-expanded={openPessoaPopOver}
 										className="w-1/2 justify-between"
 									>
 										{value
@@ -144,7 +149,7 @@ export function CreateMovimentacao() {
 														onSelect={_ => {
 															field.handleChange(pessoa.id);
 															setValue(String(pessoa.id));
-															setOpen(false);
+															setOpenPessoaPopOver(false);
 														}}
 													>
 														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
@@ -173,13 +178,13 @@ export function CreateMovimentacao() {
 							<Label htmlFor="conta" className="text-xl">
 								Conta
 							</Label>
-							<Popover open={open} onOpenChange={setOpen}>
+							<Popover open={openContaPopOver} onOpenChange={setOpenContaPopOver}>
 								<PopoverTrigger asChild>
 									<Button
 										ref={triggerRef}
 										variant="outline"
 										role="combobox"
-										aria-expanded={open}
+										aria-expanded={openContaPopOver}
 										className="w-1/2 justify-between"
 									>
 										{value
@@ -207,7 +212,7 @@ export function CreateMovimentacao() {
 										/>
 										<CommandList>
 											{pessoasConta.data.pessoas.length === 0 && (
-												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
+												<CommandEmpty>Conta não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
 												{pessoasConta.data?.pessoas.map(pessoa => (
@@ -217,7 +222,7 @@ export function CreateMovimentacao() {
 														onSelect={_ => {
 															field.handleChange(String(pessoa.id));
 															setValue(String(pessoa.id));
-															setOpen(false);
+															setOpenContaPopOver(false);
 														}}
 													>
 														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
