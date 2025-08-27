@@ -31,7 +31,10 @@ import {
 } from "@/components/ui/command";
 import { showCpfFormatted } from "@/utils/util";
 import { useEffect, useRef, useState } from "react";
-import { useBuscarPessoaEConta, usePessoasConta } from "@/app/conta/-components/useContaQuery";
+import {
+	useBuscarPessoaEConta,
+	usePessoasConta,
+} from "@/app/conta/-components/mutations/useContaQuery";
 import MovimentacoesTable from "./table/MovimentacaoTable";
 import { toast } from "sonner";
 import { z } from "zod";

@@ -1,8 +1,8 @@
-import type { ContaRequestDto } from "@/models/conta-model";
 import { buscarPessoaEConta, buscarPessoasFilter } from "@/api/pessoas";
+import type { ContaRequestDto } from "@/models/conta-model";
 import { criarConta, deleteConta } from "@/api/conta";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PessoaContaResponse, PessoaPageDto } from "@/models/pessoa-model";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateConta() {
 	const queryClient = useQueryClient();

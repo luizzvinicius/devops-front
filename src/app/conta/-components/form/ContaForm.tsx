@@ -15,25 +15,17 @@ import {
 	useCreateConta,
 	useDeleteConta,
 	usePessoasConta,
-} from "./useContaQuery";
+} from "../mutations/useContaQuery";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Label } from "@/components/ui/label";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { showCpfFormatted } from "@/utils/util";
-import { z } from "zod";
-import ContasTable from "./table/ContasTable";
+import ContasTable from "../table/ContasTable";
+import { createContaSchema, nullFormState } from "./formSchema";
+import type { z } from "zod";
 
-const createContaSchema = z
-	.object({
-		id: z.number().positive("Nenhuma pessoa selecionada"),
-	})
-	.required();
-
-const nullFormState = {
-	id: 0,
-};
 export function CreateConta() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
