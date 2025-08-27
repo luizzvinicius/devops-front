@@ -1,7 +1,8 @@
+import { contaMovimentacoes } from "@/api/conta";
 import { createMovimentacao } from "@/api/movimentacoes";
+import type { ContaMovimentacoesResponseDto } from "@/models/conta-model";
 import type { MovimentacoesRequestDto } from "@/models/movimentacao-model";
-import type { PessoaPageDto } from "@/models/pessoa-model";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateMovimentacao() {
 	const queryClient = useQueryClient();
@@ -10,46 +11,49 @@ export function useCreateMovimentacao() {
 		mutationKey: ["createMovimentacao"],
 		mutationFn: async (data: MovimentacoesRequestDto) => await createMovimentacao(data),
 
-		onError: e => {
-			console.log("Erro ao criar movimentacao:", e);
-		},
-
 		onSuccess: data => {
 			if (!data) return;
 
-			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
-				const updated = old.pessoas.map(pessoa =>
-					pessoa.id === data.id
-						? {
-								nome: pessoa.nome,
-								cpf: pessoa.cpf,
-								conta: [
-									{
-										id: data.id,
-										movimentacoes: [
-											{
-												id: data.id,
-												valor: data.valor,
-												dataHora: data.data,
-											},
-										],
-									},
-								],
-							}
-						: pessoa,
-				);
-
-				return {
-					...old,
-					pessoas: [...updated],
-					totalElements: old.pageSize + 1,
-				};
-			});
+			queryClient.setQueryData(
+				["contaMovimentacoes"],
+				(old: ContaMovimentacoesResponseDto) => {
+					return {
+						contaMovimentacoes: [...old.contaMovimentacoes, data],
+						saldo: old.saldo + data.valor,
+						pageSize: old.pageSize + 1,
+						totalElements: old.totalElements + 1,
+					};
+				},
+			);
 		},
 	});
 }
 
+export const useContaMovimentacoes = (contaId: string, page: number) => {
+	return useQuery({
+		initialData: {
+			contaMovimentacoes: [],
+			saldo: 0,
+			pageSize: 0,
+			totalElements: 0,
+		},
+		enabled: contaId.length > 0,
+		queryKey: ["contaMovimentacoes"],
+		queryFn: async () => {
+			const request = await contaMovimentacoes(contaId, page);
+			if (!request) {
+				return Promise.reject();
+			}
+			return request;
+		},
+	});
+};
+
 export function useDeleteMovimentacao() {
 	const queryClient = useQueryClient();
-	return useMutation({});
+
+	return useMutation({
+		mutationKey: ["deleteMovimentacao"],
+		mutationFn: async (data: MovimentacoesRequestDto) => await deleteMovimentacao(data),
+	});
 }

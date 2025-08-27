@@ -12,9 +12,9 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import type { MovimentacoesRow } from "@/models/movimentacao-model";
+import type { ContaMovimentacoesDto } from "@/models/conta-model";
 
-type MovimentacoesColumns = MovimentacoesRow & {
+type MovimentacoesColumns = ContaMovimentacoesDto & {
 	form: AnyFormApi;
 	isDialogOpen: boolean;
 	setIsDialogOpen: (isDialogOpen: boolean) => void;
@@ -23,31 +23,34 @@ type MovimentacoesColumns = MovimentacoesRow & {
 
 export const columns: ColumnDef<MovimentacoesColumns>[] = [
 	{
-		accessorKey: "conta_id",
+		accessorKey: "contaId",
 		header: "Conta",
 		cell: ({ row }) => {
-			return <div>{row.original.conta_id}</div>;
+			return <div>{row.original.contaId}</div>;
 		},
 	},
 	{
-		accessorKey: "id",
+		accessorKey: "movimentacaoId",
 		header: "Id movimentação",
 		cell: ({ row }) => {
-			return <div>{row.original.id}</div>;
+			return <div>{row.original.movimentacaoId}</div>;
 		},
 	},
 	{
 		accessorKey: "valor",
 		header: "Valor",
 		cell: ({ row }) => {
-			return <div>{row.original.valor}</div>;
+			const valorOriginal = row.original.valor;
+			const color = valorOriginal > 0 ? "text-green-300" : "text-red-300";
+			const valor = valorOriginal > 0 ? valorOriginal : Math.abs(valorOriginal);
+			return <div className={`${color}`}>{valor}</div>;
 		},
 	},
 	{
-		accessorKey: "data",
+		accessorKey: "dataMovimentacao",
 		header: "Data",
 		cell: ({ row }) => {
-			return <div>{row.original.data.toISOString()}</div>;
+			return <div>nada</div>;
 		},
 	},
 	{
@@ -59,7 +62,7 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
-							Excluir movimentação
+							Excluir
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
@@ -76,7 +79,7 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 							<Button
 								variant="destructive"
 								onClick={() => {
-									row.original.deleteMovimentacao(row.original.id);
+									row.original.deleteMovimentacao(row.original.movimentacaoId);
 									setIsDialogOpen(false);
 								}}
 							>
@@ -97,7 +100,7 @@ export default function MovimentacoesTable({
 	setIsDialogOpen,
 	deleteMovimentacao,
 }: {
-	movimentacoes: MovimentacoesRow[];
+	movimentacoes: ContaMovimentacoesDto[];
 	form: AnyFormApi;
 	isDialogOpen: boolean;
 	setIsDialogOpen: (isDialogOpen: boolean) => void;

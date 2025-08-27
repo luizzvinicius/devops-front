@@ -10,7 +10,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useCreateMovimentacao, useDeleteMovimentacao } from "./useMovimentacaoQuery";
+import {
+	useContaMovimentacoes,
+	useCreateMovimentacao,
+	useDeleteMovimentacao,
+} from "./useMovimentacaoQuery";
 import { Operacao, type OperacaoValue } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
@@ -26,8 +30,8 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import { showCpfFormatted } from "@/utils/util";
-import { useRef, useState } from "react";
-import { usePessoasConta } from "@/app/conta/-components/useContaQuery";
+import { useEffect, useRef, useState } from "react";
+import { useBuscarPessoaEConta, usePessoasConta } from "@/app/conta/-components/useContaQuery";
 import MovimentacoesTable from "./table/MovimentacaoTable";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -56,14 +60,30 @@ export function CreateMovimentacao() {
 	const [openPessoaPopOver, setOpenPessoaPopOver] = useState<boolean>(false);
 	const [openContaPopOver, setOpenContaPopOver] = useState<boolean>(false);
 	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-	const [value, setValue] = useState<string | undefined>("");
+	const [pessoaId, setPessoaId] = useState<string | undefined>("");
+	const [contaId, setContaId] = useState<string>("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
 	const pessoasConta = usePessoasConta(searchTerm, 0);
+	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
+		Number(pessoaId),
+	);
+	const contaMovimentacoes = useContaMovimentacoes(contaId, 0);
 	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
 	const { mutateAsync: deleteMovimentacao } = useDeleteMovimentacao();
+
+	useEffect(() => {
+		const handler = setTimeout(async () => {
+			if (searchTerm.length > 0) {
+				try {
+					await updateBuscarPessoaEConta();
+				} catch (_) {}
+			}
+		}, 1000);
+		return () => clearTimeout(handler);
+	}, [searchTerm, updateBuscarPessoaEConta]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -114,9 +134,9 @@ export function CreateMovimentacao() {
 										aria-expanded={openPessoaPopOver}
 										className="w-1/2 justify-between"
 									>
-										{value
+										{pessoaId
 											? pessoasConta.data?.pessoas.map(pessoa => {
-													return pessoa.id === Number(value)
+													return pessoa.id === Number(pessoaId)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
 														: "";
 												})
@@ -148,7 +168,7 @@ export function CreateMovimentacao() {
 														value={pessoa.nome}
 														onSelect={_ => {
 															field.handleChange(pessoa.id);
-															setValue(String(pessoa.id));
+															setPessoaId(String(pessoa.id));
 															setOpenPessoaPopOver(false);
 														}}
 													>
@@ -156,7 +176,7 @@ export function CreateMovimentacao() {
 														<Check
 															className={cn(
 																"ml-auto",
-																Number(value) === pessoa.id
+																Number(pessoaId) === pessoa.id
 																	? "opacity-100"
 																	: "opacity-0",
 															)}
@@ -187,13 +207,13 @@ export function CreateMovimentacao() {
 										aria-expanded={openContaPopOver}
 										className="w-1/2 justify-between"
 									>
-										{value
-											? pessoasConta.data?.pessoas.map(pessoa => {
-													return pessoa.id === Number(value)
-														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
+										{contaId
+											? pessoaEConta.pessoaAndContaDtoList.map(pessoa => {
+													return pessoa.conta_id === contaId
+														? pessoa.conta_id
 														: "";
 												})
-											: "Selecione uma pessoa"}
+											: "Selecione uma conta"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
 								</PopoverTrigger>
@@ -207,35 +227,39 @@ export function CreateMovimentacao() {
 								>
 									<Command>
 										<CommandInput
-											placeholder="Digite o nome da pessoa"
+											placeholder="Digite o id da conta"
 											onValueChange={setSearchTerm}
 										/>
 										<CommandList>
-											{pessoasConta.data.pessoas.length === 0 && (
+											{pessoaEConta.pessoaAndContaDtoList.length === 0 && (
 												<CommandEmpty>Conta não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
-												{pessoasConta.data?.pessoas.map(pessoa => (
-													<CommandItem
-														key={pessoa.id}
-														value={pessoa.nome}
-														onSelect={_ => {
-															field.handleChange(String(pessoa.id));
-															setValue(String(pessoa.id));
-															setOpenContaPopOver(false);
-														}}
-													>
-														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
-														<Check
-															className={cn(
-																"ml-auto",
-																Number(value) === pessoa.id
-																	? "opacity-100"
-																	: "opacity-0",
-															)}
-														/>
-													</CommandItem>
-												))}
+												{pessoaEConta.pessoaAndContaDtoList.map(
+													pessoaConta => (
+														<CommandItem
+															key={pessoaConta.conta_id}
+															value={pessoaConta.conta_id}
+															onSelect={_ => {
+																field.handleChange(
+																	pessoaConta.conta_id,
+																);
+																setContaId(pessoaConta.conta_id);
+																setOpenContaPopOver(false);
+															}}
+														>
+															{pessoaConta.conta_id}
+															<Check
+																className={cn(
+																	"ml-auto",
+																	contaId === pessoaConta.conta_id
+																		? "opacity-100"
+																		: "opacity-0",
+																)}
+															/>
+														</CommandItem>
+													),
+												)}
 											</CommandGroup>
 										</CommandList>
 									</Command>
@@ -305,7 +329,7 @@ export function CreateMovimentacao() {
 				<MovimentacoesTable
 					form={form}
 					deleteMovimentacao={deleteMovimentacao}
-					movimentacoes={[]}
+					movimentacoes={contaMovimentacoes.data.contaMovimentacoes}
 					isDialogOpen={isDialogOpen}
 					setIsDialogOpen={setIsDialogOpen}
 				/>
