@@ -42,7 +42,6 @@ import { createMovimentacaoSchema, type CreateMovimentacaoType, nullFormState } 
 export function CreateMovimentacao() {
 	const [openPessoaPopOver, setOpenPessoaPopOver] = useState<boolean>(false);
 	const [openContaPopOver, setOpenContaPopOver] = useState<boolean>(false);
-	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
 	const [pessoaId, setPessoaId] = useState<string | undefined>("");
 	const [contaId, setContaId] = useState<string>("");
 	const [searchTerm, setSearchTerm] = useState("");
@@ -313,8 +312,6 @@ export function CreateMovimentacao() {
 					form={form}
 					deleteMovimentacao={deleteMovimentacao}
 					movimentacoes={contaMovimentacoes.data.contaMovimentacoes}
-					isDialogOpen={isDialogOpen}
-					setIsDialogOpen={setIsDialogOpen}
 				/>
 			</div>
 		</div>

@@ -13,15 +13,17 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import type { ContaMovimentacoesDto } from "@/models/conta-model";
+import { useState } from "react";
 
 type MovimentacoesColumns = ContaMovimentacoesDto & {
 	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (isDialogOpen: boolean) => void;
-	deleteMovimentacao: (id: number) => void;
 };
 
-export const columns: ColumnDef<MovimentacoesColumns>[] = [
+export const columns = (
+	openDialogId: number | null,
+	setOpenDialogId: (id: number | null) => void,
+	deleteMovimentacao: (id: number) => void,
+): ColumnDef<MovimentacoesColumns>[] => [
 	{
 		accessorKey: "contaId",
 		header: "Conta",
@@ -50,16 +52,19 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 		accessorKey: "dataMovimentacao",
 		header: "Data",
 		cell: ({ row }) => {
-			return <div>nada</div>;
+			const data = row.original.dataMovimentacao;
+			return <div>{data.getDate()}</div>;
 		},
 	},
 	{
 		header: "Remover",
 		cell: ({ row }) => {
-			const isDialogOpen = row.original.isDialogOpen;
-			const setIsDialogOpen = row.original.setIsDialogOpen;
+			const movId = row.original.movimentacaoId;
 			return (
-				<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+				<Dialog
+					open={openDialogId === movId}
+					onOpenChange={open => setOpenDialogId(open ? movId : null)}
+				>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
 							Excluir
@@ -73,14 +78,14 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 							Tem certeza que deseja remover esta movimentação?
 						</DialogDescription>
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+							<Button variant="outline" onClick={() => setOpenDialogId(null)}>
 								Cancelar
 							</Button>
 							<Button
 								variant="destructive"
 								onClick={() => {
-									row.original.deleteMovimentacao(row.original.movimentacaoId);
-									setIsDialogOpen(false);
+									deleteMovimentacao(movId);
+									setOpenDialogId(null);
 								}}
 							>
 								Remover movimentação
@@ -96,22 +101,23 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 export default function MovimentacoesTable({
 	movimentacoes,
 	form,
-	isDialogOpen,
-	setIsDialogOpen,
 	deleteMovimentacao,
 }: {
 	movimentacoes: ContaMovimentacoesDto[];
 	form: AnyFormApi;
-	isDialogOpen: boolean;
-	setIsDialogOpen: (isDialogOpen: boolean) => void;
 	deleteMovimentacao: (id: number) => void;
 }) {
+	const [openDialogId, setOpenDialogId] = useState<number | null>(null);
 	const data = movimentacoes.map(mov => ({
 		...mov,
 		form,
-		isDialogOpen,
-		setIsDialogOpen,
 		deleteMovimentacao,
 	}));
-	return <DataTable columns={columns} data={data} />;
+	return (
+		<DataTable
+			columns={columns(openDialogId, setOpenDialogId, deleteMovimentacao)}
+			data={data}
+			searchFields={[]}
+		/>
+	);
 }
