@@ -1,5 +1,4 @@
-"use client";
-import { CreatePessoaForm } from "./-components/CreatePessoaForm";
+import { CreatePessoaForm } from "./-components/form/PessoaForm";
 import QueryProvider from "@/providers/tsQuery";
 
 export default function Pessoa() {

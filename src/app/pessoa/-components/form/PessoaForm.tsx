@@ -3,42 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputMask } from "@react-input/mask";
 import { useForm } from "@tanstack/react-form";
-import { useCreatePessoa, useDeletePessoa, useGetPessoas, useUpdatePessoa } from "./usePessoaQuery";
+import {
+	useCreatePessoa,
+	useDeletePessoa,
+	useGetPessoas,
+	useUpdatePessoa,
+} from "../mutations/usePessoaQuery";
 import { Label } from "@/components/ui/label";
 import { FieldInfo } from "@/components/forms/FieldInfo";
-import PessoaDataTable from "./table/PessoaTable";
+import PessoaDataTable from "../table/PessoaTable";
 import { toast } from "sonner";
-import { z } from "zod";
-
-export const createPessoaSchema = z
-	.object({
-		id: z.number(),
-		name: z
-			.string()
-			.min(3, "Nome mínimo de 3 caracteres")
-			.max(255, "Nome deve ter no máximo 255 caracteres"),
-		cpf: z
-			.string()
-			.trim()
-			.min(11, "O CPF deve ter pelo menos 11 caracteres")
-			.transform(cpf => {
-				return cpf.replace(/[.\-]/g, "");
-			}),
-		address: z
-			.string()
-			.min(5, "Endereço mínimo de 5 caracteres")
-			.max(255, "Endereço deve ter no máximo 255 caracteres"),
-	})
-	.required();
-
-export type CreatePessoaType = z.infer<typeof createPessoaSchema>;
-
-const nullFormState = {
-	id: 0,
-	name: "",
-	cpf: "",
-	address: "",
-};
+import { createPessoaSchema, type CreatePessoaType, nullFormState } from "./formSchema";
 
 export function CreatePessoaForm() {
 	const { data: pessoasResponse } = useGetPessoas(0);
