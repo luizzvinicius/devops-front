@@ -1,5 +1,5 @@
 import QueryProvider from "@/providers/tsQuery";
-import { CreateMovimentacao } from "./-components/CreateMovimentacaoForm";
+import { CreateMovimentacao } from "./-components/form/MovimentacaoForm";
 
 export default function Movimentacao() {
 	return (

@@ -14,7 +14,7 @@ import {
 	useContaMovimentacoes,
 	useCreateMovimentacao,
 	useDeleteMovimentacao,
-} from "./useMovimentacaoQuery";
+} from "../mutations/useMovimentacaoQuery";
 import { Operacao, type OperacaoValue } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
@@ -35,29 +35,9 @@ import {
 	useBuscarPessoaEConta,
 	usePessoasConta,
 } from "@/app/conta/-components/mutations/useContaQuery";
-import MovimentacoesTable from "./table/MovimentacaoTable";
+import MovimentacoesTable from "../table/MovimentacaoTable";
 import { toast } from "sonner";
-import { z } from "zod";
-
-const createMovimentacaoSchema = z
-	.object({
-		pessoa_id: z.number(),
-		conta_id: z.string(),
-		valor: z.number().positive("Valor deve ser maior que 0"),
-		tipoMovimentacao: z
-			.enum(Object.values(Operacao) as [OperacaoValue])
-			.or(z.string().nonempty()),
-	})
-	.required();
-
-export type CreateMovimentacaoType = z.infer<typeof createMovimentacaoSchema>;
-
-const nullFormState: CreateMovimentacaoType = {
-	pessoa_id: 0,
-	conta_id: "",
-	valor: 0,
-	tipoMovimentacao: "",
-};
+import { createMovimentacaoSchema, type CreateMovimentacaoType, nullFormState } from "./formSchema";
 
 export function CreateMovimentacao() {
 	const [openPessoaPopOver, setOpenPessoaPopOver] = useState<boolean>(false);
