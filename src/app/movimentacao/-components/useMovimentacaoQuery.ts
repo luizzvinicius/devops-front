@@ -1,5 +1,5 @@
 import { contaMovimentacoes } from "@/api/conta";
-import { createMovimentacao } from "@/api/movimentacoes";
+import { createMovimentacao, deleteMovimentacao } from "@/api/movimentacoes";
 import type { ContaMovimentacoesResponseDto } from "@/models/conta-model";
 import type { MovimentacoesRequestDto } from "@/models/movimentacao-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,8 +17,19 @@ export function useCreateMovimentacao() {
 			queryClient.setQueryData(
 				["contaMovimentacoes"],
 				(old: ContaMovimentacoesResponseDto) => {
+					if (old.totalElements === 0) {
+						// pegar dados de pessoa e conta da queryClient
+
+						return {
+							contaMovimentacoes: [],
+							saldo: data.valor,
+							pageSize: 1,
+							totalElements: 1,
+						};
+					}
+
 					return {
-						contaMovimentacoes: [...old.contaMovimentacoes, data],
+						contaMovimentacoes: [...old.contaMovimentacoes],
 						saldo: old.saldo + data.valor,
 						pageSize: old.pageSize + 1,
 						totalElements: old.totalElements + 1,
@@ -54,6 +65,28 @@ export function useDeleteMovimentacao() {
 
 	return useMutation({
 		mutationKey: ["deleteMovimentacao"],
-		mutationFn: async (data: MovimentacoesRequestDto) => await deleteMovimentacao(data),
+		mutationFn: async (idMovimentacao: number) => await deleteMovimentacao(idMovimentacao),
+
+		onSuccess: (_, idMovimentacao) => {
+			queryClient.setQueryData(
+				["contaMovimentacoes"],
+				(old: ContaMovimentacoesResponseDto) => {
+					if (!old) return;
+					const excludedContaMov = old.contaMovimentacoes.find(
+						contaMov => contaMov.movimentacaoId === idMovimentacao,
+					)!;
+
+					const updated = old.contaMovimentacoes.filter(
+						contaMov => contaMov.movimentacaoId !== idMovimentacao,
+					);
+					return {
+						contaMovimentacoes: [...updated],
+						saldo: old.saldo - excludedContaMov.valor,
+						pageSize: old.pageSize - 1,
+						totalElements: old.totalElements - 1,
+					};
+				},
+			);
+		},
 	});
 }
