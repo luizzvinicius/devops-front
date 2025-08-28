@@ -283,58 +283,60 @@ export function CreateMovimentacao() {
 						</div>
 					)}
 				</form.Field>
-				<form.Field name="valor">
-					{field => (
-						<div>
-							<Label htmlFor="valor" className="text-xl">
-								Valor
-							</Label>
-							<InputMask
-								id="valor"
-								className="w-[200px]"
-								mask="99999999999999"
-								replacement={{ 9: /\d/ }}
-								component={Input}
-								placeholder="Valor"
-								value={field.state.value === 0 ? "" : field.state.value}
-								onChange={e => {
-									const numericValue = e.target.value.replace(/\D/g, "");
-									field.handleChange(
-										numericValue ? Number.parseInt(numericValue, 10) : 0,
-									);
-								}}
-							/>
-							<FieldInfo fieldMeta={field.state.meta} />
-						</div>
-					)}
-				</form.Field>
-				<form.Field name="tipoMovimentacao">
-					{field => (
-						<div>
-							<Label id="movimentacao" className="text-xl">
-								Movimentação
-							</Label>
-							<Select
-								onValueChange={value => {
-									field.handleChange(value as OperacaoValue);
-								}}
-								value={field.state.value as OperacaoValue}
-							>
-								<SelectTrigger className="w-[180px]">
-									<SelectValue placeholder="Operação" />
-								</SelectTrigger>
-								<SelectContent>
-									{Object.values(Operacao).map(opr => (
-										<SelectItem key={opr} value={opr}>
-											{opr}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<FieldInfo fieldMeta={field.state.meta} />
-						</div>
-					)}
-				</form.Field>
+				<div className="md:flex gap-10">
+					<form.Field name="valor">
+						{field => (
+							<div>
+								<Label htmlFor="valor" className="text-xl">
+									Valor
+								</Label>
+								<InputMask
+									id="valor"
+									className="w-[200px]"
+									mask="99999999999999"
+									replacement={{ 9: /\d/ }}
+									component={Input}
+									placeholder="Valor"
+									value={field.state.value === 0 ? "" : field.state.value}
+									onChange={e => {
+										const numericValue = e.target.value.replace(/\D/g, "");
+										field.handleChange(
+											numericValue ? Number.parseInt(numericValue, 10) : 0,
+										);
+									}}
+								/>
+								<FieldInfo fieldMeta={field.state.meta} />
+							</div>
+						)}
+					</form.Field>
+					<form.Field name="tipoMovimentacao">
+						{field => (
+							<div>
+								<Label id="movimentacao" className="text-xl">
+									Movimentação
+								</Label>
+								<Select
+									onValueChange={value => {
+										field.handleChange(value as OperacaoValue);
+									}}
+									value={field.state.value as OperacaoValue}
+								>
+									<SelectTrigger className="w-[180px]">
+										<SelectValue placeholder="Operação" />
+									</SelectTrigger>
+									<SelectContent>
+										{Object.values(Operacao).map(opr => (
+											<SelectItem key={opr} value={opr}>
+												{opr}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								<FieldInfo fieldMeta={field.state.meta} />
+							</div>
+						)}
+					</form.Field>
+				</div>
 				<div className="flex justify-center">
 					<Button type="submit">Salvar</Button>
 				</div>
