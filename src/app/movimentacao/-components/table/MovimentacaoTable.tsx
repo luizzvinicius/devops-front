@@ -1,29 +1,14 @@
-"use client";
 import type { AnyFormApi } from "@tanstack/react-form";
-import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
 import type { ContaMovimentacoesDto } from "@/models/conta-model";
-import { useState } from "react";
+import { showDateFormatted } from "@/utils/util";
 
 type MovimentacoesColumns = ContaMovimentacoesDto & {
 	form: AnyFormApi;
 };
 
-export const columns = (
-	openDialogId: number | null,
-	setOpenDialogId: (id: number | null) => void,
-	deleteMovimentacao: (id: number) => void,
-): ColumnDef<MovimentacoesColumns>[] => [
+export const columns: ColumnDef<MovimentacoesColumns>[] = [
 	{
 		accessorKey: "contaId",
 		header: "Conta",
@@ -52,48 +37,8 @@ export const columns = (
 		accessorKey: "dataMovimentacao",
 		header: "Data",
 		cell: ({ row }) => {
-			const data = row.original.dataMovimentacao;
-			return <div>{data.getDate()}</div>;
-		},
-	},
-	{
-		header: "Remover",
-		cell: ({ row }) => {
-			const movId = row.original.movimentacaoId;
-			return (
-				<Dialog
-					open={openDialogId === movId}
-					onOpenChange={open => setOpenDialogId(open ? movId : null)}
-				>
-					<DialogTrigger asChild>
-						<Button variant="destructive" size="sm">
-							Excluir
-						</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle>Confirmar Remoção</DialogTitle>
-						</DialogHeader>
-						<DialogDescription className="text-black">
-							Tem certeza que deseja remover esta movimentação?
-						</DialogDescription>
-						<DialogFooter>
-							<Button variant="outline" onClick={() => setOpenDialogId(null)}>
-								Cancelar
-							</Button>
-							<Button
-								variant="destructive"
-								onClick={() => {
-									deleteMovimentacao(movId);
-									setOpenDialogId(null);
-								}}
-							>
-								Remover movimentação
-							</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
-			);
+			const data = new Date(row.original.dataMovimentacao);
+			return <div>{showDateFormatted(data)}</div>;
 		},
 	},
 ];
@@ -101,23 +46,13 @@ export const columns = (
 export default function MovimentacoesTable({
 	movimentacoes,
 	form,
-	deleteMovimentacao,
 }: {
 	movimentacoes: ContaMovimentacoesDto[];
 	form: AnyFormApi;
-	deleteMovimentacao: (id: number) => void;
 }) {
-	const [openDialogId, setOpenDialogId] = useState<number | null>(null);
 	const data = movimentacoes.map(mov => ({
 		...mov,
 		form,
-		deleteMovimentacao,
 	}));
-	return (
-		<DataTable
-			columns={columns(openDialogId, setOpenDialogId, deleteMovimentacao)}
-			data={data}
-			searchFields={[]}
-		/>
-	);
+	return <DataTable columns={columns} data={data} searchFields={[]} />;
 }

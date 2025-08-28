@@ -10,11 +10,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import {
-	useContaMovimentacoes,
-	useCreateMovimentacao,
-	useDeleteMovimentacao,
-} from "../mutations/useMovimentacaoQuery";
+import { useContaMovimentacoes, useCreateMovimentacao } from "../mutations/useMovimentacaoQuery";
 import { Operacao, type OperacaoValue } from "@/models/movimentacao-model";
 import { useForm } from "@tanstack/react-form";
 import { FieldInfo } from "@/components/forms/FieldInfo";
@@ -40,32 +36,24 @@ import { toast } from "sonner";
 import { createMovimentacaoSchema, type CreateMovimentacaoType, nullFormState } from "./formSchema";
 
 export function CreateMovimentacao() {
-	const [openPessoaPopOver, setOpenPessoaPopOver] = useState<boolean>(false);
-	const [openContaPopOver, setOpenContaPopOver] = useState<boolean>(false);
-	const [pessoaId, setPessoaId] = useState<string | undefined>("");
+	const [popOverStatus, setPopOverStatus] = useState({
+		pessoa: false,
+		conta: false,
+	});
+	const [pessoaId, setPessoaId] = useState<string>("");
 	const [contaId, setContaId] = useState<string>("");
 	const [searchTerm, setSearchTerm] = useState("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
-
 	/*Queries */
-	const pessoasConta = usePessoasConta(searchTerm, 0);
+	const { data: pessoasConta, refetch: updatePessoasConta } = usePessoasConta(searchTerm, 0);
 	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
 		Number(pessoaId),
 	);
-	const contaMovimentacoes = useContaMovimentacoes(contaId, 0);
+	const { data: contaMovimentacoes, refetch: updateContaMovimentacoes } = useContaMovimentacoes(
+		contaId,
+		0,
+	);
 	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
-	const { mutateAsync: deleteMovimentacao } = useDeleteMovimentacao();
-
-	useEffect(() => {
-		const handler = setTimeout(async () => {
-			if (searchTerm.length > 0) {
-				try {
-					await updateBuscarPessoaEConta();
-				} catch (_) {}
-			}
-		}, 1000);
-		return () => clearTimeout(handler);
-	}, [searchTerm, updateBuscarPessoaEConta]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -77,18 +65,40 @@ export function CreateMovimentacao() {
 		},
 	});
 
+	useEffect(() => {
+		const handler = setTimeout(async () => {
+			if (searchTerm.length > 0) {
+				try {
+					await updatePessoasConta();
+					await updateBuscarPessoaEConta();
+				} catch (_) {}
+			}
+		}, 1000);
+		return () => clearTimeout(handler);
+	}, [searchTerm, updateBuscarPessoaEConta, updatePessoasConta]);
+
+	useEffect(() => {
+		if (contaId && contaId.length > 0) {
+			const fetchData = async () => {
+				await updateContaMovimentacoes();
+			};
+			fetchData();
+		}
+	}, [contaId, updateContaMovimentacoes]);
+
 	async function onSubmit(formData: CreateMovimentacaoType) {
-		console.log(formData);
 		try {
 			await createMovimentacao({
 				contaId: formData.conta_id,
 				tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
 				valor: formData.valor,
 			});
-		} catch (_) {
+		} catch (e) {
+			console.log(e);
 			toast.error("Erro ao criar movimentação");
 		}
-		form.reset(nullFormState);
+		form.setFieldValue("valor", 0);
+		form.setFieldValue("tipoMovimentacao", "");
 	}
 
 	return (
@@ -107,17 +117,25 @@ export function CreateMovimentacao() {
 							<Label id="pessoa" className="text-xl">
 								Pessoa
 							</Label>
-							<Popover open={openPessoaPopOver} onOpenChange={setOpenPessoaPopOver}>
+							<Popover
+								open={popOverStatus.pessoa}
+								onOpenChange={status =>
+									setPopOverStatus({
+										...popOverStatus,
+										pessoa: status,
+									})
+								}
+							>
 								<PopoverTrigger asChild>
 									<Button
 										ref={triggerRef}
 										variant="outline"
 										role="combobox"
-										aria-expanded={openPessoaPopOver}
+										aria-expanded={popOverStatus.pessoa}
 										className="w-1/2 justify-between"
 									>
 										{pessoaId
-											? pessoasConta.data?.pessoas.map(pessoa => {
+											? pessoasConta.pessoas.map(pessoa => {
 													return pessoa.id === Number(pessoaId)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
 														: "";
@@ -140,18 +158,21 @@ export function CreateMovimentacao() {
 											onValueChange={setSearchTerm}
 										/>
 										<CommandList>
-											{pessoasConta.data.pessoas.length === 0 && (
+											{pessoasConta.pessoas.length === 0 && (
 												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
-												{pessoasConta.data?.pessoas.map(pessoa => (
+												{pessoasConta.pessoas.map(pessoa => (
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
 														onSelect={_ => {
 															field.handleChange(pessoa.id);
 															setPessoaId(String(pessoa.id));
-															setOpenPessoaPopOver(false);
+															setPopOverStatus({
+																...popOverStatus,
+																pessoa: false,
+															});
 														}}
 													>
 														{`Nome: ${pessoa.nome} | CPF: ${showCpfFormatted(pessoa.cpf)}`}
@@ -180,13 +201,21 @@ export function CreateMovimentacao() {
 							<Label htmlFor="conta" className="text-xl">
 								Conta
 							</Label>
-							<Popover open={openContaPopOver} onOpenChange={setOpenContaPopOver}>
-								<PopoverTrigger asChild>
+							<Popover
+								open={popOverStatus.conta}
+								onOpenChange={status =>
+									setPopOverStatus({
+										...popOverStatus,
+										conta: status,
+									})
+								}
+							>
+								<PopoverTrigger asChild disabled={pessoaId.length === 0}>
 									<Button
 										ref={triggerRef}
 										variant="outline"
 										role="combobox"
-										aria-expanded={openContaPopOver}
+										aria-expanded={popOverStatus.conta}
 										className="w-1/2 justify-between"
 									>
 										{contaId
@@ -227,7 +256,10 @@ export function CreateMovimentacao() {
 																	pessoaConta.conta_id,
 																);
 																setContaId(pessoaConta.conta_id);
-																setOpenContaPopOver(false);
+																setPopOverStatus({
+																	...popOverStatus,
+																	conta: false,
+																});
 															}}
 														>
 															{pessoaConta.conta_id}
@@ -310,8 +342,7 @@ export function CreateMovimentacao() {
 			<div className="h-[300px] overflow-y-auto">
 				<MovimentacoesTable
 					form={form}
-					deleteMovimentacao={deleteMovimentacao}
-					movimentacoes={contaMovimentacoes.data.contaMovimentacoes}
+					movimentacoes={contaMovimentacoes.contaMovimentacoes}
 				/>
 			</div>
 		</div>

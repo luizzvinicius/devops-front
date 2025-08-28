@@ -3,12 +3,12 @@ import z from "zod";
 
 export const createMovimentacaoSchema = z
 	.object({
-		pessoa_id: z.number(),
-		conta_id: z.string(),
+		pessoa_id: z.number().positive("Selecione uma pessoa"),
+		conta_id: z.string().nonempty("Selecione uma conta"),
 		valor: z.number().positive("Valor deve ser maior que 0"),
 		tipoMovimentacao: z
 			.enum(Object.values(Operacao) as [OperacaoValue])
-			.or(z.string().nonempty()),
+			.or(z.string().nonempty("Selecione um operação")),
 	})
 	.required();
 

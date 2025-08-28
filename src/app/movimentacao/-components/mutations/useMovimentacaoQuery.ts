@@ -1,7 +1,8 @@
 import { contaMovimentacoes } from "@/api/conta";
-import { createMovimentacao, deleteMovimentacao } from "@/api/movimentacoes";
+import { createMovimentacao } from "@/api/movimentacoes";
 import type { ContaMovimentacoesResponseDto } from "@/models/conta-model";
 import type { MovimentacoesRequestDto } from "@/models/movimentacao-model";
+import type { PessoaContaResponse } from "@/models/pessoa-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateMovimentacao() {
@@ -11,17 +12,28 @@ export function useCreateMovimentacao() {
 		mutationKey: ["createMovimentacao"],
 		mutationFn: async (data: MovimentacoesRequestDto) => await createMovimentacao(data),
 
-		onSuccess: data => {
+		onSuccess: (data, movReqDto) => {
 			if (!data) return;
 
 			queryClient.setQueryData(
 				["contaMovimentacoes"],
 				(old: ContaMovimentacoesResponseDto) => {
 					if (old.totalElements === 0) {
-						// pegar dados de pessoa e conta da queryClient
-
+						const pessoas: PessoaContaResponse | undefined = queryClient.getQueryData([
+							"buscarPessoaEConta",
+						]);
+						const selectPessoa = pessoas?.pessoaAndContaDtoList.find(
+							p => p.conta_id === movReqDto.contaId,
+						);
 						return {
-							contaMovimentacoes: [],
+							contaMovimentacoes: [
+								{
+									contaId: selectPessoa?.conta_id,
+									movimentacaoId: data.id,
+									valor: data.valor,
+									dataMovimentacao: data.data,
+								},
+							],
 							saldo: data.valor,
 							pageSize: 1,
 							totalElements: 1,
@@ -29,7 +41,15 @@ export function useCreateMovimentacao() {
 					}
 
 					return {
-						contaMovimentacoes: [...old.contaMovimentacoes],
+						contaMovimentacoes: [
+							...old.contaMovimentacoes,
+							{
+								contaId: old.contaMovimentacoes[0].contaId,
+								movimentacaoId: data.id,
+								valor: data.valor,
+								dataMovimentacao: data.data,
+							},
+						],
 						saldo: old.saldo + data.valor,
 						pageSize: old.pageSize + 1,
 						totalElements: old.totalElements + 1,
@@ -59,34 +79,3 @@ export const useContaMovimentacoes = (contaId: string, page: number) => {
 		},
 	});
 };
-
-export function useDeleteMovimentacao() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationKey: ["deleteMovimentacao"],
-		mutationFn: async (idMovimentacao: number) => await deleteMovimentacao(idMovimentacao),
-
-		onSuccess: (_, idMovimentacao) => {
-			queryClient.setQueryData(
-				["contaMovimentacoes"],
-				(old: ContaMovimentacoesResponseDto) => {
-					if (!old) return;
-					const excludedContaMov = old.contaMovimentacoes.find(
-						contaMov => contaMov.movimentacaoId === idMovimentacao,
-					)!;
-
-					const updated = old.contaMovimentacoes.filter(
-						contaMov => contaMov.movimentacaoId !== idMovimentacao,
-					);
-					return {
-						contaMovimentacoes: [...updated],
-						saldo: old.saldo - excludedContaMov.valor,
-						pageSize: old.pageSize - 1,
-						totalElements: old.totalElements - 1,
-					};
-				},
-			);
-		},
-	});
-}
