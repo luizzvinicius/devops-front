@@ -25,11 +25,14 @@ import { showCpfFormatted } from "@/utils/util";
 import ContasTable from "../table/ContasTable";
 import { createContaSchema, nullFormState } from "./formSchema";
 import type { z } from "zod";
+import type { PessoaPageDto } from "@/models/pessoa-model";
+import { toast } from "sonner";
 
 export function CreateConta() {
 	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
 	const [value, setValue] = useState<string | undefined>("");
+	const [filteredPessoa, setFilteredPessoa] = useState<PessoaPageDto>();
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
@@ -44,12 +47,18 @@ export function CreateConta() {
 		const handler = setTimeout(async () => {
 			if (searchTerm.length > 0) {
 				try {
+					const result = pessoasContas.data;
+					setFilteredPessoa(result);
 					await updateBuscarPessoaEConta();
-				} catch (_) {}
+				} catch (_) {
+					setFilteredPessoa(undefined);
+				}
+			} else {
+				setFilteredPessoa(undefined);
 			}
 		}, 1000);
 		return () => clearTimeout(handler);
-	}, [searchTerm, updateBuscarPessoaEConta]);
+	}, [searchTerm, updateBuscarPessoaEConta, pessoasContas]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -62,9 +71,13 @@ export function CreateConta() {
 	});
 
 	async function onSubmit(formData: z.infer<typeof createContaSchema>) {
-		await createConta({
-			pessoaId: formData.id,
-		});
+		try {
+			await createConta({
+				pessoaId: formData.id,
+			});
+		} catch (_) {
+			toast.error("Erro ao criar conta");
+		}
 	}
 
 	return (
@@ -93,7 +106,7 @@ export function CreateConta() {
 										className="w-1/2 justify-between"
 									>
 										{value
-											? pessoasContas.data?.pessoas.map(pessoa => {
+											? filteredPessoa?.pessoas.map(pessoa => {
 													return pessoa.id === Number(value)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
 														: "";
@@ -116,11 +129,11 @@ export function CreateConta() {
 											onValueChange={setSearchTerm}
 										/>
 										<CommandList>
-											{pessoasContas.data?.pessoas.length === 0 && (
+											{filteredPessoa?.pessoas.length === 0 && (
 												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
-												{pessoasContas.data?.pessoas.map(pessoa => (
+												{filteredPessoa?.pessoas.map(pessoa => (
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}

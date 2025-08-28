@@ -11,10 +11,6 @@ export function useCreateConta() {
 		mutationKey: ["buscarPessoaEConta"],
 		mutationFn: async (data: ContaRequestDto) => await criarConta(data),
 
-		onError: e => {
-			console.log("Erro ao criar conta:", e);
-		},
-
 		onSuccess: (createdAccount, pessoaId) => {
 			queryClient.setQueryData(["buscarPessoaEConta"], (old: PessoaContaResponse) => {
 				if (old.pessoaAndContaDtoList.length === 0) {
@@ -68,10 +64,6 @@ export function useDeleteConta() {
 		mutationKey: ["deleteConta"],
 		mutationFn: async (idConta: string) => {
 			await deleteConta(idConta);
-		},
-
-		onError: e => {
-			console.log("Erro ao deletar conta:", e);
 		},
 
 		onSuccess: (_, idConta) => {
