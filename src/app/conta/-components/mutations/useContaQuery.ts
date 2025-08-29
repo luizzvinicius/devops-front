@@ -90,10 +90,11 @@ export const usePessoasConta = (nome: string, page: number) => {
 			pageSize: 0,
 			totalElements: 0,
 		},
-
 		enabled: nome.length > 0,
 		queryKey: ["pessoasFiltered"],
 		queryFn: async () => {
+			console.log("chamou");
+
 			const request = await buscarPessoasFilter(nome, page);
 			if (!request) {
 				return Promise.reject();

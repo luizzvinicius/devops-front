@@ -36,29 +36,29 @@ export function CreateConta() {
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
-	const pessoasContas = usePessoasConta(searchTerm, 0);
+	const { data: pessoasContas, refetch: updatePessoaConta } = usePessoasConta(searchTerm, 0);
 	const { mutateAsync: createConta } = useCreateConta();
 	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
 		Number(value),
 	);
 	const { mutateAsync: deleteConta } = useDeleteConta();
 
-	useEffect(() => {
-		const handler = setTimeout(async () => {
-			if (searchTerm.length > 0) {
-				try {
-					const result = pessoasContas.data;
-					setFilteredPessoa(result);
-					await updateBuscarPessoaEConta();
-				} catch (_) {
-					setFilteredPessoa(undefined);
-				}
-			} else {
-				setFilteredPessoa(undefined);
-			}
-		}, 1000);
-		return () => clearTimeout(handler);
-	}, [searchTerm, updateBuscarPessoaEConta, pessoasContas]);
+	// useEffect(() => {
+	// 	const handler = setTimeout(() => {
+	// 		if (searchTerm.length > 0) {
+	// 			try {
+	// 				const result = pessoasContas.data;
+	// 				setFilteredPessoa(result);
+	// 				// await updateBuscarPessoaEConta();
+	// 			} catch (_) {
+	// 				setFilteredPessoa(undefined);
+	// 			}
+	// 		} else {
+	// 			setFilteredPessoa(undefined);
+	// 		}
+	// 	}, 1000);
+	// 	return () => clearTimeout(handler);
+	// }, [searchTerm, pessoasContas]);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -106,7 +106,7 @@ export function CreateConta() {
 										className="w-1/2 justify-between"
 									>
 										{value
-											? filteredPessoa?.pessoas.map(pessoa => {
+											? pessoasContas?.pessoas.map(pessoa => {
 													return pessoa.id === Number(value)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
 														: "";
@@ -126,20 +126,27 @@ export function CreateConta() {
 									<Command>
 										<CommandInput
 											placeholder="Digite o nome da pessoa"
-											onValueChange={setSearchTerm}
+											onValueChange={search => {
+												const times = setTimeout(async () => {
+													setSearchTerm(search);
+													await updatePessoaConta();
+												}, 1000);
+												return () => clearTimeout(times);
+											}}
 										/>
 										<CommandList>
-											{filteredPessoa?.pessoas.length === 0 && (
+											{pessoasContas?.pessoas.length === 0 && (
 												<CommandEmpty>Pessoa não encontrada</CommandEmpty>
 											)}
 											<CommandGroup>
-												{filteredPessoa?.pessoas.map(pessoa => (
+												{pessoasContas?.pessoas.map(pessoa => (
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
-														onSelect={_ => {
+														onSelect={async _ => {
 															field.handleChange(pessoa.id);
 															setValue(String(pessoa.id));
+															await updateBuscarPessoaEConta();
 															setOpen(false);
 														}}
 													>
