@@ -6,7 +6,6 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
-  ColumnFiltersState,
   FilterFnOption
 } from "@tanstack/react-table"
 import {
@@ -17,9 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Button } from "./button"
 import { useEffect, useState } from "react"
-import { Input } from "./input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -37,7 +34,7 @@ export function DataTable<TData, TValue>({
   defaultSearch = ""
 }: DataTableProps<TData, TValue>) {
     const [globalFilter, setGlobalFilter] = useState(defaultSearch)
-    const [searchValue, setSearchValue] = useState(defaultSearch)
+    const [searchValue] = useState(defaultSearch)
     useEffect(() => {
         const timer = setTimeout(() => {
           setGlobalFilter(searchValue);

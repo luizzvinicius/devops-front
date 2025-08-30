@@ -132,7 +132,9 @@ export function CreatePessoaForm() {
 				<PessoaDataTable
 					pessoas={pessoasResponse.pessoas}
 					form={form}
-					deletePessoa={deletePessoa}
+					deletePessoa={async id => {
+						await deletePessoa(id);
+					}}
 				/>
 			</div>
 		</div>

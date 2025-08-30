@@ -1,9 +1,9 @@
 import axios from "axios";
+import { BASE_URL } from "@/constants/constants";
 import type {
 	MovimentacoesRequestDto,
 	MovimentacoesResponseDto,
 } from "@/models/movimentacao-model";
-import { BASE_URL } from "@/constants/constants";
 
 const ENTITY = "/movimentacoes";
 
