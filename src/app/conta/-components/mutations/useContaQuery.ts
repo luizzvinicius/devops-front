@@ -99,11 +99,9 @@ export const usePessoasConta = (nome: string, page: number) => {
 		initialData: defaultDataPessoasConta,
 		queryKey: ["pessoasFiltered", nome],
 		queryFn: async () => {
-			console.log("chamou", nome);
 			if (nome.length === 0) {
 				return defaultDataPessoasConta;
 			}
-
 			try {
 				return await buscarPessoasFilter(nome, page);
 			} catch (_) {
