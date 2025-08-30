@@ -10,9 +10,9 @@ export const createPessoaSchema = z
 		cpf: z
 			.string()
 			.trim()
-			.min(11, "O CPF deve ter pelo menos 11 caracteres")
+			.min(14, "O CPF deve ter pelo menos 11 caracteres")
 			.transform(cpf => {
-				return cpf.replace(/[.\-]/g, "");
+				return cpf.replace(/[.-]/g, "");
 			}),
 		address: z
 			.string()

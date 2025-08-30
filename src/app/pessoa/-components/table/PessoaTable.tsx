@@ -58,7 +58,7 @@ export const columns = (
 						row.original.form.reset({
 							id: row.original.id,
 							name: row.original.nome,
-							cpf: row.original.cpf,
+							cpf: showCpfFormatted(row.original.cpf),
 							address: row.original.endereco,
 						});
 					}}
