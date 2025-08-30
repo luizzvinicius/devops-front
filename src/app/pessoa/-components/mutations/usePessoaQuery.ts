@@ -83,10 +83,6 @@ export function useDeletePessoa() {
 			return idparam;
 		},
 
-		onError: e => {
-			console.error("Erro ao deletar pessoa:", e);
-		},
-
 		onSuccess: idparam => {
 			queryClient.setQueryData(["pessoas"], (old: PessoaPageDto) => {
 				if (!old) return;

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { showCpfFormatted } from "@/utils/util";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type PessoaColumn = PessoaResponseDto & {
 	form: AnyFormApi;
@@ -23,7 +24,7 @@ type PessoaColumn = PessoaResponseDto & {
 export const columns = (
 	openDialogId: number | null,
 	setOpenDialogId: (id: number | null) => void,
-	deletePessoa: (id: number) => void,
+	deletePessoa: (id: number) => Promise<void>,
 ): ColumnDef<PessoaColumn>[] => [
 	{
 		accessorKey: "nome",
@@ -94,8 +95,12 @@ export const columns = (
 							</Button>
 							<Button
 								variant="destructive"
-								onClick={() => {
-									deletePessoa(pessoaId);
+								onClick={async () => {
+									try {
+										await deletePessoa(pessoaId);
+									} catch (_) {
+										toast.error("Erro ao deletar conta");
+									}
 									setOpenDialogId(null);
 								}}
 							>
@@ -116,7 +121,7 @@ export default function PessoaDataTable({
 }: {
 	pessoas: PessoaResponseDto[];
 	form: AnyFormApi;
-	deletePessoa: (id: number) => void;
+	deletePessoa: (id: number) => Promise<void>;
 }) {
 	const [openDialogId, setOpenDialogId] = useState<number | null>(null);
 	const data = pessoas.map(pessoa => ({
