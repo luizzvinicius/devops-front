@@ -2,10 +2,10 @@ import { contaMovimentacoes } from "@/api/conta";
 import { createMovimentacao } from "@/api/movimentacoes";
 import type { ContaMovimentacoesResponseDto } from "@/models/conta-model";
 import type { MovimentacoesRequestDto } from "@/models/movimentacao-model";
-import type { PessoaContaResponse } from "@/models/pessoa-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
-export function useCreateMovimentacao() {
+export function useCreateMovimentacao(pessoaId: number) {
 	const queryClient = useQueryClient();
 
 	return useMutation({
@@ -16,24 +16,17 @@ export function useCreateMovimentacao() {
 			if (!data) return;
 
 			queryClient.setQueryData(
-				["contaMovimentacoes"],
+				["contaMovimentacoes", pessoaId, movReqDto.contaId],
 				(old: ContaMovimentacoesResponseDto) => {
+					const movimentacao = {
+						contaId: movReqDto.contaId,
+						movimentacaoId: data.id,
+						valor: data.valor,
+						dataMovimentacao: data.data,
+					};
 					if (old.totalElements === 0) {
-						const pessoas: PessoaContaResponse | undefined = queryClient.getQueryData([
-							"buscarPessoaEConta",
-						]);
-						const selectPessoa = pessoas?.pessoaAndContaDtoList.find(
-							p => p.conta_id === movReqDto.contaId,
-						);
 						return {
-							contaMovimentacoes: [
-								{
-									contaId: selectPessoa?.conta_id,
-									movimentacaoId: data.id,
-									valor: data.valor,
-									dataMovimentacao: data.data,
-								},
-							],
+							contaMovimentacoes: [movimentacao],
 							saldo: data.valor,
 							pageSize: 1,
 							totalElements: 1,
@@ -41,15 +34,7 @@ export function useCreateMovimentacao() {
 					}
 
 					return {
-						contaMovimentacoes: [
-							...old.contaMovimentacoes,
-							{
-								contaId: old.contaMovimentacoes[0].contaId,
-								movimentacaoId: data.id,
-								valor: data.valor,
-								dataMovimentacao: data.data,
-							},
-						],
+						contaMovimentacoes: [...old.contaMovimentacoes, movimentacao],
 						saldo: old.saldo + data.valor,
 						pageSize: old.pageSize + 1,
 						totalElements: old.totalElements + 1,
@@ -60,22 +45,26 @@ export function useCreateMovimentacao() {
 	});
 }
 
-export const useContaMovimentacoes = (contaId: string, page: number) => {
+const defaultDataContaMovimentacoes = {
+	contaMovimentacoes: [],
+	saldo: 0,
+	pageSize: 0,
+	totalElements: 0,
+};
+export const useContaMovimentacoes = (pessoaId: number, contaId: string, page: number) => {
 	return useQuery({
-		initialData: {
-			contaMovimentacoes: [],
-			saldo: 0,
-			pageSize: 0,
-			totalElements: 0,
-		},
-		enabled: contaId.length > 0,
-		queryKey: ["contaMovimentacoes"],
+		initialData: defaultDataContaMovimentacoes,
+		queryKey: ["contaMovimentacoes", pessoaId, contaId],
 		queryFn: async () => {
-			const request = await contaMovimentacoes(contaId, page);
-			if (!request) {
-				return Promise.reject();
+			if (contaId.length === 0) {
+				return defaultDataContaMovimentacoes;
 			}
-			return request;
+			try {
+				return await contaMovimentacoes(contaId, page);
+			} catch (_) {
+				toast.error("Erro ao buscar conta e movimentações");
+				return defaultDataContaMovimentacoes;
+			}
 		},
 	});
 };
