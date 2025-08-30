@@ -32,16 +32,14 @@ export function CreateConta() {
 	const [open, setOpen] = useState(false);
 	const [personNameInput, setPersonNameInput] = useState("");
 	const personName = useDebounce<string>(personNameInput, 1000);
-	const [personId, setPersonId] = useState<string | undefined>("");
+	const [personId, setPersonId] = useState<number>(0);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
-	const { data: pessoasContas, refetch: updatePessoaConta } = usePessoasConta(personName, 0);
+	const { data: pessoasContas } = usePessoasConta(personName, 0);
 	const { mutateAsync: createConta } = useCreateConta(personName);
-	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
-		Number(personId),
-	);
-	const { mutateAsync: deleteConta } = useDeleteConta(Number(personId));
+	const { data: pessoaEConta } = useBuscarPessoaEConta(personId);
+	const { mutateAsync: deleteConta } = useDeleteConta(personId);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -89,11 +87,10 @@ export function CreateConta() {
 										className="w-1/2 justify-between"
 									>
 										{personId
-											? pessoasContas?.pessoas.map(pessoa =>
-													pessoa.id === Number(personId)
-														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
-														: "Selecione uma pessoa",
-												)
+											? pessoasContas?.pessoas.map(pessoa => {
+													if (pessoa.id === personId)
+														return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
+												})
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
@@ -109,9 +106,8 @@ export function CreateConta() {
 									<Command>
 										<CommandInput
 											placeholder="Digite o nome da pessoa"
-											onValueChange={async search => {
+											onValueChange={search => {
 												setPersonNameInput(search);
-												await updatePessoaConta();
 											}}
 										/>
 										<CommandList>
@@ -123,10 +119,9 @@ export function CreateConta() {
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
-														onSelect={async _ => {
+														onSelect={_ => {
 															field.handleChange(pessoa.id);
-															setPersonId(String(pessoa.id));
-															await updateBuscarPessoaEConta();
+															setPersonId(pessoa.id);
 															setOpen(false);
 														}}
 													>
@@ -134,7 +129,7 @@ export function CreateConta() {
 														<Check
 															className={cn(
 																"ml-auto",
-																Number(personId) === pessoa.id
+																personId === pessoa.id
 																	? "opacity-100"
 																	: "opacity-0",
 															)}
