@@ -26,7 +26,7 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import { showCpfFormatted } from "@/utils/util";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
 	useBuscarPessoaEConta,
 	usePessoasConta,
@@ -34,26 +34,23 @@ import {
 import MovimentacoesTable from "../table/MovimentacaoTable";
 import { toast } from "sonner";
 import { createMovimentacaoSchema, type CreateMovimentacaoType, nullFormState } from "./formSchema";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function CreateMovimentacao() {
 	const [popOverStatus, setPopOverStatus] = useState({
 		pessoa: false,
 		conta: false,
 	});
-	const [pessoaId, setPessoaId] = useState<string>("");
+	const [personId, setPessoaId] = useState<number>(0);
 	const [contaId, setContaId] = useState<string>("");
-	const [searchTerm, setSearchTerm] = useState("");
+	const [personNameInput, setPersonNameInput] = useState("");
+	const personName = useDebounce<string>(personNameInput, 1000);
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	/*Queries */
-	const { data: pessoasConta, refetch: updatePessoasConta } = usePessoasConta(searchTerm, 0);
-	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
-		Number(pessoaId),
-	);
-	const { data: contaMovimentacoes, refetch: updateContaMovimentacoes } = useContaMovimentacoes(
-		contaId,
-		0,
-	);
-	const { mutateAsync: createMovimentacao } = useCreateMovimentacao();
+	const { data: pessoasConta } = usePessoasConta(personName, 0);
+	const { data: pessoaEConta } = useBuscarPessoaEConta(personId);
+	const { data: contaMovimentacoes } = useContaMovimentacoes(personId, contaId, 0);
+	const { mutateAsync: createMovimentacao } = useCreateMovimentacao(personId);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -65,27 +62,6 @@ export function CreateMovimentacao() {
 		},
 	});
 
-	useEffect(() => {
-		const handler = setTimeout(async () => {
-			if (searchTerm.length > 0) {
-				try {
-					await updatePessoasConta();
-					await updateBuscarPessoaEConta();
-				} catch (_) {}
-			}
-		}, 1000);
-		return () => clearTimeout(handler);
-	}, [searchTerm, updateBuscarPessoaEConta, updatePessoasConta]);
-
-	useEffect(() => {
-		if (contaId && contaId.length > 0) {
-			const fetchData = async () => {
-				await updateContaMovimentacoes();
-			};
-			fetchData();
-		}
-	}, [contaId, updateContaMovimentacoes]);
-
 	async function onSubmit(formData: CreateMovimentacaoType) {
 		try {
 			await createMovimentacao({
@@ -93,8 +69,7 @@ export function CreateMovimentacao() {
 				tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
 				valor: formData.valor,
 			});
-		} catch (e) {
-			console.log(e);
+		} catch (_) {
 			toast.error("Erro ao criar movimentação");
 		}
 		form.setFieldValue("valor", 0);
@@ -134,11 +109,10 @@ export function CreateMovimentacao() {
 										aria-expanded={popOverStatus.pessoa}
 										className="w-1/2 justify-between"
 									>
-										{pessoaId
+										{personId
 											? pessoasConta.pessoas.map(pessoa => {
-													return pessoa.id === Number(pessoaId)
-														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
-														: "";
+													if (pessoa.id === personId)
+														return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
 												})
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
@@ -155,7 +129,7 @@ export function CreateMovimentacao() {
 									<Command>
 										<CommandInput
 											placeholder="Digite o nome da pessoa"
-											onValueChange={setSearchTerm}
+											onValueChange={setPersonNameInput}
 										/>
 										<CommandList>
 											{pessoasConta.pessoas.length === 0 && (
@@ -168,7 +142,8 @@ export function CreateMovimentacao() {
 														value={pessoa.nome}
 														onSelect={_ => {
 															field.handleChange(pessoa.id);
-															setPessoaId(String(pessoa.id));
+															setPessoaId(pessoa.id);
+															setContaId("");
 															setPopOverStatus({
 																...popOverStatus,
 																pessoa: false,
@@ -179,7 +154,7 @@ export function CreateMovimentacao() {
 														<Check
 															className={cn(
 																"ml-auto",
-																Number(pessoaId) === pessoa.id
+																personId === pessoa.id
 																	? "opacity-100"
 																	: "opacity-0",
 															)}
@@ -210,7 +185,7 @@ export function CreateMovimentacao() {
 									})
 								}
 							>
-								<PopoverTrigger asChild disabled={pessoaId.length === 0}>
+								<PopoverTrigger asChild disabled={personId === 0}>
 									<Button
 										ref={triggerRef}
 										variant="outline"
@@ -239,7 +214,7 @@ export function CreateMovimentacao() {
 									<Command>
 										<CommandInput
 											placeholder="Digite o id da conta"
-											onValueChange={setSearchTerm}
+											onValueChange={setPersonNameInput}
 										/>
 										<CommandList>
 											{pessoaEConta.pessoaAndContaDtoList.length === 0 && (

@@ -38,7 +38,7 @@ export function CreatePessoaForm() {
 			cpf: parsed.cpf,
 			endereco: parsed.address,
 		};
-		if (formData.id === 0) {
+		if (parsed.id === 0) {
 			try {
 				await createPessoa(pessoa);
 			} catch (_) {

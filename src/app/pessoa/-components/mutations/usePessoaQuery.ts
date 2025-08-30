@@ -1,21 +1,24 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPessoa, deletePessoa, getAllPessoas, updatePessoa } from "@/api/pessoas";
 import type { PessoaPageDto, PessoaRequestDto } from "@/models/pessoa-model";
+import { toast } from "sonner";
 
+const defaultDataGetPessoas = {
+	pessoas: [],
+	pageSize: 0,
+	totalElements: 0,
+};
 export const useGetPessoas = (page: number) => {
 	return useQuery({
-		initialData: {
-			pessoas: [],
-			pageSize: 0,
-			totalElements: 0,
-		},
+		initialData: defaultDataGetPessoas,
 		queryKey: ["pessoas"],
 		queryFn: async () => {
-			const request = await getAllPessoas(page);
-			if (!request) {
-				return Promise.reject();
+			try {
+				return await getAllPessoas(page);
+			} catch (_) {
+				toast.error("Erro no servidor ao buscar pessoas");
+				return defaultDataGetPessoas;
 			}
-			return request;
 		},
 	});
 };
@@ -81,10 +84,6 @@ export function useDeletePessoa() {
 		mutationFn: async (idparam: number) => {
 			await deletePessoa(idparam);
 			return idparam;
-		},
-
-		onError: e => {
-			console.error("Erro ao deletar pessoa:", e);
 		},
 
 		onSuccess: idparam => {
