@@ -9,7 +9,7 @@ import {
 	CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
 	useBuscarPessoaEConta,
 	useCreateConta,
@@ -25,40 +25,23 @@ import { showCpfFormatted } from "@/utils/util";
 import ContasTable from "../table/ContasTable";
 import { createContaSchema, nullFormState } from "./formSchema";
 import type { z } from "zod";
-import type { PessoaPageDto } from "@/models/pessoa-model";
 import { toast } from "sonner";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function CreateConta() {
-	const [searchTerm, setSearchTerm] = useState("");
 	const [open, setOpen] = useState(false);
-	const [value, setValue] = useState<string | undefined>("");
-	const [filteredPessoa, setFilteredPessoa] = useState<PessoaPageDto>();
+	const [personNameInput, setPersonNameInput] = useState("");
+	const personName = useDebounce<string>(personNameInput, 1000);
+	const [personId, setPersonId] = useState<string | undefined>("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
 
 	/*Queries */
-	const { data: pessoasContas, refetch: updatePessoaConta } = usePessoasConta(searchTerm, 0);
-	const { mutateAsync: createConta } = useCreateConta();
+	const { data: pessoasContas, refetch: updatePessoaConta } = usePessoasConta(personName, 0);
+	const { mutateAsync: createConta } = useCreateConta(personName);
 	const { data: pessoaEConta, refetch: updateBuscarPessoaEConta } = useBuscarPessoaEConta(
-		Number(value),
+		Number(personId),
 	);
-	const { mutateAsync: deleteConta } = useDeleteConta();
-
-	// useEffect(() => {
-	// 	const handler = setTimeout(() => {
-	// 		if (searchTerm.length > 0) {
-	// 			try {
-	// 				const result = pessoasContas.data;
-	// 				setFilteredPessoa(result);
-	// 				// await updateBuscarPessoaEConta();
-	// 			} catch (_) {
-	// 				setFilteredPessoa(undefined);
-	// 			}
-	// 		} else {
-	// 			setFilteredPessoa(undefined);
-	// 		}
-	// 	}, 1000);
-	// 	return () => clearTimeout(handler);
-	// }, [searchTerm, pessoasContas]);
+	const { mutateAsync: deleteConta } = useDeleteConta(Number(personId));
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -105,12 +88,12 @@ export function CreateConta() {
 										aria-expanded={open}
 										className="w-1/2 justify-between"
 									>
-										{value
-											? pessoasContas?.pessoas.map(pessoa => {
-													return pessoa.id === Number(value)
+										{personId
+											? pessoasContas?.pessoas.map(pessoa =>
+													pessoa.id === Number(personId)
 														? `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`
-														: "";
-												})
+														: "Selecione uma pessoa",
+												)
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
@@ -119,19 +102,16 @@ export function CreateConta() {
 									className="p-1"
 									style={{
 										width: triggerRef.current
-											? triggerRef.current.offsetWidth
+											? triggerRef?.current?.offsetWidth
 											: undefined,
 									}}
 								>
 									<Command>
 										<CommandInput
 											placeholder="Digite o nome da pessoa"
-											onValueChange={search => {
-												const times = setTimeout(async () => {
-													setSearchTerm(search);
-													await updatePessoaConta();
-												}, 1000);
-												return () => clearTimeout(times);
+											onValueChange={async search => {
+												setPersonNameInput(search);
+												await updatePessoaConta();
 											}}
 										/>
 										<CommandList>
@@ -145,7 +125,7 @@ export function CreateConta() {
 														value={pessoa.nome}
 														onSelect={async _ => {
 															field.handleChange(pessoa.id);
-															setValue(String(pessoa.id));
+															setPersonId(String(pessoa.id));
 															await updateBuscarPessoaEConta();
 															setOpen(false);
 														}}
@@ -154,7 +134,7 @@ export function CreateConta() {
 														<Check
 															className={cn(
 																"ml-auto",
-																Number(value) === pessoa.id
+																Number(personId) === pessoa.id
 																	? "opacity-100"
 																	: "opacity-0",
 															)}

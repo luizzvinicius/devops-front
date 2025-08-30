@@ -15,6 +15,7 @@ import {
 import { showCpfFormatted } from "@/utils/util";
 import type { PessoaEConta } from "@/models/pessoa-model";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type ContasTableRow = PessoaEConta & {
 	form: AnyFormApi;
@@ -23,7 +24,7 @@ type ContasTableRow = PessoaEConta & {
 export const columns = (
 	openDialogId: string | null,
 	setOpenDialogId: (id: string | null) => void,
-	deleteConta: (id: string) => void,
+	deleteConta: (id: string) => Promise<void>,
 ): ColumnDef<ContasTableRow>[] => [
 	{
 		accessorKey: "nome",
@@ -80,8 +81,12 @@ export const columns = (
 							</Button>
 							<Button
 								variant="destructive"
-								onClick={() => {
-									deleteConta(contaId);
+								onClick={async () => {
+									try {
+										await deleteConta(contaId);
+									} catch (_) {
+										toast.error("Erro ao deletar conta");
+									}
 									setOpenDialogId(null);
 								}}
 							>
@@ -102,7 +107,7 @@ export default function ContasTable({
 }: {
 	pessoaConta: PessoaEConta[];
 	form: AnyFormApi;
-	deleteConta: (id: string) => void;
+	deleteConta: (id: string) => Promise<void>;
 }) {
 	const [openDialogId, setOpenDialogId] = useState<string | null>(null);
 	const data: ContasTableRow[] =
