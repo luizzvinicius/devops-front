@@ -104,7 +104,7 @@ export const usePessoasConta = (nome: string, page: number) => {
 			}
 			try {
 				return await buscarPessoasFilter(nome, page);
-			} catch (_) {
+			} catch {
 				toast.error("Erro no servidor ao buscar pessoa");
 				return defaultDataPessoasConta;
 			}
@@ -133,7 +133,7 @@ export const useBuscarPessoaEConta = (id: number) => {
 		queryFn: async () => {
 			try {
 				return await buscarPessoaEConta(id);
-			} catch (_) {
+			} catch {
 				toast.error("Erro no servidor ao buscar pessoas e contas");
 				return defaultDataBuscarPessoaEConta;
 			}
