@@ -212,10 +212,7 @@ export function CreateMovimentacao() {
 									}}
 								>
 									<Command>
-										<CommandInput
-											placeholder="Digite o id da conta"
-											onValueChange={setPersonNameInput}
-										/>
+										<CommandInput placeholder="Digite o id da conta" />
 										<CommandList>
 											{pessoaEConta.pessoaAndContaDtoList.length === 0 && (
 												<CommandEmpty>Conta não encontrada</CommandEmpty>
