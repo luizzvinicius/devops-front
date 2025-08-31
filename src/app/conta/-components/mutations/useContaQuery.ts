@@ -131,6 +131,10 @@ export const useBuscarPessoaEConta = (id: number) => {
 		initialData: defaultDataBuscarPessoaEConta,
 		queryKey: ["buscarPessoaEConta", id],
 		queryFn: async () => {
+			if (id === 0) {
+				return defaultDataBuscarPessoaEConta
+			}
+			
 			try {
 				return await buscarPessoaEConta(id);
 			} catch (_) {
