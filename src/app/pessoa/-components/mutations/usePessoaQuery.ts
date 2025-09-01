@@ -15,7 +15,7 @@ export const useGetPessoas = (page: number) => {
 		queryFn: async () => {
 			try {
 				return await getAllPessoas(page);
-			} catch (_) {
+			} catch {
 				toast.error("Erro no servidor ao buscar pessoas");
 				return defaultDataGetPessoas;
 			}

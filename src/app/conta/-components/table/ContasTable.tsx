@@ -84,7 +84,7 @@ export const columns = (
 								onClick={async () => {
 									try {
 										await deleteConta(contaId);
-									} catch (_) {
+									} catch {
 										toast.error("Erro ao deletar conta");
 									}
 									setOpenDialogId(null);

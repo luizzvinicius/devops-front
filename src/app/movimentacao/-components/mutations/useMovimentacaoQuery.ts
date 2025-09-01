@@ -61,7 +61,7 @@ export const useContaMovimentacoes = (pessoaId: number, contaId: string, page: n
 			}
 			try {
 				return await contaMovimentacoes(contaId, page);
-			} catch (_) {
+			} catch {
 				toast.error("Erro ao buscar conta e movimentações");
 				return defaultDataContaMovimentacoes;
 			}

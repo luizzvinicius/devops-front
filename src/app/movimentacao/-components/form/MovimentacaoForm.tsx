@@ -69,7 +69,7 @@ export function CreateMovimentacao() {
 				tipoMovimentacao: formData.tipoMovimentacao as OperacaoValue,
 				valor: formData.valor,
 			});
-		} catch (_) {
+		} catch {
 			toast.error("Erro ao criar movimentação");
 		}
 		form.setFieldValue("valor", 0);
@@ -140,7 +140,7 @@ export function CreateMovimentacao() {
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
-														onSelect={_ => {
+														onSelect={() => {
 															field.handleChange(pessoa.id);
 															setPessoaId(pessoa.id);
 															setContaId("");
@@ -223,7 +223,7 @@ export function CreateMovimentacao() {
 														<CommandItem
 															key={pessoaConta.conta_id}
 															value={pessoaConta.conta_id}
-															onSelect={_ => {
+															onSelect={() => {
 																field.handleChange(
 																	pessoaConta.conta_id,
 																);

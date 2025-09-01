@@ -41,7 +41,7 @@ export function CreatePessoaForm() {
 		if (parsed.id === 0) {
 			try {
 				await createPessoa(pessoa);
-			} catch (_) {
+			} catch {
 				toast.error("Erro ao criar pessoa");
 			}
 		} else {
@@ -50,7 +50,7 @@ export function CreatePessoaForm() {
 					idparam: parsed.id,
 					data: pessoa,
 				});
-			} catch (_) {
+			} catch {
 				toast.error("Erro ao atualizar pessoa");
 			}
 		}
@@ -132,7 +132,9 @@ export function CreatePessoaForm() {
 				<PessoaDataTable
 					pessoas={pessoasResponse.pessoas}
 					form={form}
-					deletePessoa={deletePessoa}
+					deletePessoa={async id => {
+						await deletePessoa(id);
+					}}
 				/>
 			</div>
 		</div>

@@ -56,7 +56,7 @@ export function CreateConta() {
 			await createConta({
 				pessoaId: formData.id,
 			});
-		} catch (_) {
+		} catch {
 			toast.error("Erro ao criar conta");
 		}
 	}
@@ -119,7 +119,7 @@ export function CreateConta() {
 													<CommandItem
 														key={pessoa.id}
 														value={pessoa.nome}
-														onSelect={_ => {
+														onSelect={() => {
 															field.handleChange(pessoa.id);
 															setPersonId(pessoa.id);
 															setOpen(false);
