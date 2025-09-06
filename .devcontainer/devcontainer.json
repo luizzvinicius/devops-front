@@ -1,0 +1,49 @@
+{
+	"name": "Node.js & TypeScript",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {}
+	},
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "yarn install",
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"breadcrumbs.enabled": false,
+				"editor.formatOnSave": true,
+				"editor.defaultFormatter": "biomejs.biome",
+				"editor.fontFamily": "JetBrains Mono",
+				"editor.wordWrap": "on",
+				"editor.minimap.enabled": false,
+				"explorer.fileNesting.enabled": true,
+				"javascript.updateImportsOnFileMove.enabled": "always",
+				"window.commandCenter": false,
+				"workbench.colorTheme": "Dracula Theme",
+				"workbench.layoutControl.enabled": false,
+				"workbench.iconTheme": "material-icon-theme"
+			},
+			"extensions": [
+				"dracula-theme.theme-dracula",
+				"VisualStudioExptTeam.intellicode-api-usage-examples",
+				"ms-vscode.vscode-typescript-next",
+				"biomejs.biome",
+				"dsznajder.vscode-es7-javascript-react-snippets",
+				"YoavBls.pretty-ts-errors",
+				"chamboug.js-auto-backticks",
+				"bradlc.vscode-tailwindcss",
+				"PKief.material-icon-theme",
+				"naumovs.color-highlight",
+				"christian-kohler.npm-intellisense",
+				"eamodio.gitlens"
+			]
+		}
+	}
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
