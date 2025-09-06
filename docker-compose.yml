@@ -1,0 +1,12 @@
+services:
+  web:
+    image: bank-front:1.0
+    container_name: bank-front
+    ports:
+      - "3000:3000"
+    networks:
+      - frontend-network
+
+networks:
+  frontend-network:
+    external: true
