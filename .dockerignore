@@ -1,0 +1,13 @@
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+node_modules
+eslint.*
+.docker-ignore
+README.md
+.next
+.git
+.devcontainer
+.github
+.gitignore
+biome.json

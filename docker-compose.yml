@@ -2,6 +2,8 @@ services:
   web:
     image: bank-front:1.0
     container_name: bank-front
+    environment:
+      - NODE_ENV=production
     ports:
       - "3000:3000"
     networks:
