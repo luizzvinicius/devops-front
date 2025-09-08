@@ -4,6 +4,7 @@ services:
     container_name: bank-front
     environment:
       - NODE_ENV=production
+      - BASE_URL="http://backend:8080/api/v1"
     ports:
       - "3000:3000"
     networks:
