@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export function Header() {
 	return (
-		<div className="flex self-start w-full p-4 gap-2">
+		<nav className="flex self-start w-full p-4 gap-2">
 			<Link href="/pessoa" className="hover:underline hover:text-blue-400">
 				Pessoa
 			</Link>
@@ -14,6 +14,6 @@ export function Header() {
 			<Link href="/movimentacao" className="hover:underline hover:text-blue-400">
 				Movimentação
 			</Link>
-		</div>
+		</nav>
 	);
 }
