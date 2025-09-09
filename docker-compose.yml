@@ -1,6 +1,6 @@
 services:
   web:
-    image: bank-front:1.0
+    image: luizvinicius/bank-front:1.0
     container_name: bank-front
     environment:
       - NODE_ENV=production
