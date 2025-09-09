@@ -27,14 +27,14 @@ import {
 } from "@/components/ui/command";
 import { showCpfFormatted } from "@/utils/util";
 import { useRef, useState } from "react";
-import {
-	useBuscarPessoaEConta,
-	usePessoasConta,
-} from "@/app/conta/-components/mutations/useContaQuery";
 import MovimentacoesTable from "../table/MovimentacaoTable";
 import { toast } from "sonner";
 import { createMovimentacaoSchema, type CreateMovimentacaoType, nullFormState } from "./formSchema";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+	useBuscarPessoaEConta,
+	usePessoasConta,
+} from "@/app/(private)/conta/-components/mutations/useContaQuery";
 
 export function CreateMovimentacao() {
 	const [popOverStatus, setPopOverStatus] = useState({
