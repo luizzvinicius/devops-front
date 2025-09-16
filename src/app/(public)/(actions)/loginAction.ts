@@ -17,7 +17,7 @@ export const login = actionClient
 	.action(async ({ parsedInput: { email, password } }) => {
 		const token = await loginRequest(email, password);
 		await createSession(
-			token.access_token,
+			String(token.access_token),
 			token.expires_in,
 			token.refresh_token,
 			token.refresh_expires_in,

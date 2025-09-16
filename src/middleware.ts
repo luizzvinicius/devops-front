@@ -5,6 +5,7 @@ import {
 	REDIRECT_WHEN_NOT_AUTHENTICATED,
 } from "@/constants/routes";
 import { type MiddlewareConfig, type NextRequest, NextResponse } from "next/server";
+import { jwtDecode } from "jwt-decode";
 
 export function middleware(req: NextRequest) {
 	console.log("middleware activated");
@@ -12,7 +13,7 @@ export function middleware(req: NextRequest) {
 	const currPath = req.nextUrl.pathname;
 	const redirectUrl = req.nextUrl.clone();
 	const token = req.cookies.get("session");
-	// console.log(token);
+	if (token !== undefined) console.log(jwtDecode(token.value));
 
 	if (currPath === "/" && !token) {
 		return NextResponse.redirect(redirectUrl.origin + REDIRECT_WHEN_NOT_AUTHENTICATED);
