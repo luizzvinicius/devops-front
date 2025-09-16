@@ -2837,10 +2837,10 @@ next-auth@^5.0.0-beta.25:
   dependencies:
     "@auth/core" "0.40.0"
 
-next-safe-action@^7.10.5:
-  version "7.10.8"
-  resolved "https://registry.yarnpkg.com/next-safe-action/-/next-safe-action-7.10.8.tgz#eb740abc5e5826486efcaaef9f77ccc389bdf8d6"
-  integrity sha512-cTBoPWtvQ0t83N0a5zaveOh9vP2g3//d0hgzPJ4ch1EXCyt9+bavbVNgyOYbzWUwFerppHeFXPYsg7pbRulLQw==
+next-safe-action@^8.0.11:
+  version "8.0.11"
+  resolved "https://registry.yarnpkg.com/next-safe-action/-/next-safe-action-8.0.11.tgz#f9895dbdbb99b8fe936ccfb0f98eabad43d2bc16"
+  integrity sha512-gqJLmnQLAoFCq1kRBopN46New+vx1n9J9Y/qDQLXpv/VqU40AWxDakvshwwnWAt8R0kLvlakNYNLX5PqlXWSMg==
 
 next-themes@^0.4.6:
   version "0.4.6"
