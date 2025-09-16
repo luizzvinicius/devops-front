@@ -1,19 +1,31 @@
-import { PRIVATE_ROUTES, PUBLIC_ROUTES, REDIRECT_WHEN_NOT_AUTHENTICATED } from "@/constants/routes";
+import {
+	PRIVATE_ROUTES,
+	PUBLIC_ROUTES,
+	REDIRECT_WHEN_AUTHENTICATED,
+	REDIRECT_WHEN_NOT_AUTHENTICATED,
+} from "@/constants/routes";
 import { type MiddlewareConfig, type NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
-	const token = req.cookies.get("token");
+	console.log("middleware activated");
 
 	const currPath = req.nextUrl.pathname;
 	const redirectUrl = req.nextUrl.clone();
-	const isPublicPath = !PUBLIC_ROUTES.find(route => route.path === currPath);
+	const token = req.cookies.get("session");
+	// console.log(token);
 
-	if (!token && !isPublicPath) {
-		redirectUrl.pathname = REDIRECT_WHEN_NOT_AUTHENTICATED;
-		return NextResponse.redirect(redirectUrl);
+	if (currPath === "/" && !token) {
+		return NextResponse.redirect(redirectUrl.origin + REDIRECT_WHEN_NOT_AUTHENTICATED);
+	}
+	if ((currPath === "/" || currPath === "/login") && token) {
+		return NextResponse.redirect(redirectUrl.origin + REDIRECT_WHEN_AUTHENTICATED);
 	}
 
 	const isPrivatePath = PRIVATE_ROUTES.find(route => route.path === currPath);
+
+	if (isPrivatePath && !token) {
+		return NextResponse.redirect(redirectUrl.origin + REDIRECT_WHEN_NOT_AUTHENTICATED);
+	}
 
 	return NextResponse.next();
 }

@@ -5,10 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FieldInfo } from "@/components/forms/FieldInfo";
 import { Button } from "@/components/ui/button";
-import { login } from "@/api/auth";
 import { toast } from "sonner";
+import { login } from "../(actions)/loginAction";
+import { useAction } from "next-safe-action/hooks";
 
 export default function Login() {
+	const { executeAsync: loginRequest, isPending } = useAction(login);
+
 	const form = useForm({
 		defaultValues: nullFormState,
 		onSubmit: values => {
@@ -21,7 +24,7 @@ export default function Login() {
 
 	async function onSubmit(formData: LoginType) {
 		try {
-			await login(formData.email, formData.password);
+			await loginRequest({ email: formData.email, password: formData.password });
 		} catch {
 			toast.error("Login inválido");
 		}
