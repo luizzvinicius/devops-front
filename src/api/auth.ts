@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "@/lib/axiosConfig";
 import { BASE_URL } from "@/constants/constants";
 import type { LoginResponse } from "@/models/auth.model";
 
@@ -13,6 +14,5 @@ export async function login(email: string, password: string) {
 }
 
 export async function logout(id: string) {
-	const { data } = await axios.post(`${BASE_URL}${ENTITY}/logout/${id}`);
-	return data;
+	await axiosInstance.post(`${BASE_URL}${ENTITY}/logout/${id}`);
 }
