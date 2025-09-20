@@ -31,3 +31,12 @@ export async function deleteSession() {
 	cookieStore.delete("session");
 	cookieStore.delete("refresh_token");
 }
+
+export async function getToken(name: string) {
+	const cookieStore = await cookies();
+	const token = cookieStore.get(name);
+	if (token === undefined) {
+		throw new Error("invalid name for cookie");
+	}
+	return token.value;
+}

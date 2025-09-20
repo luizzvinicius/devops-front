@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query";
 import Profile from "./_components/Profile";
+import Avatar from "./_components/Avatar";
 
 export default function PrivateLayout({
 	children,
@@ -11,9 +12,11 @@ export default function PrivateLayout({
 }>) {
 	return (
 		<main className="min-h-screen flex flex-col bg-gray-100">
-			<div className="flex">
+			<div className="flex pr-10">
 				<Header />
-				<Profile />
+				<Avatar>
+					<Profile />
+				</Avatar>
 			</div>
 			<QueryProvider>
 				<section className="flex-grow flex items-center justify-center">
