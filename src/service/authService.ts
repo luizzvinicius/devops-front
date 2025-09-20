@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { AUTH_TOKEN } from "@/constants/constants";
 
 export async function createSession(
 	access_token: string,
@@ -9,7 +10,7 @@ export async function createSession(
 ) {
 	const cookieStore = await cookies();
 
-	cookieStore.set("session", access_token, {
+	cookieStore.set(AUTH_TOKEN, access_token, {
 		httpOnly: true,
 		secure: true,
 		expires: new Date(Date.now() + expires_in * 1000),
@@ -28,7 +29,7 @@ export async function createSession(
 
 export async function deleteSession() {
 	const cookieStore = await cookies();
-	cookieStore.delete("session");
+	cookieStore.delete(AUTH_TOKEN);
 	cookieStore.delete("refresh_token");
 }
 

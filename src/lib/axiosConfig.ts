@@ -1,5 +1,5 @@
 import axios, { type InternalAxiosRequestConfig, type AxiosInstance } from "axios";
-import { BASE_URL } from "@/constants/constants";
+import { AUTH_TOKEN, BASE_URL } from "@/constants/constants";
 import { getToken } from "@/service/authService";
 
 const axiosInstance: AxiosInstance = axios.create({
@@ -9,7 +9,7 @@ const axiosInstance: AxiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
 	async (config: InternalAxiosRequestConfig) => {
-		const token = await getToken("session");
+		const token = await getToken(AUTH_TOKEN);
 		config.headers.Authorization = `Bearer ${token}`;
 		return config;
 	},

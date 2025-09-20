@@ -1,9 +1,10 @@
 import { jwtDecode } from "jwt-decode";
 import type { Token } from "@/models/auth.model";
 import { getToken } from "@/service/authService";
+import { AUTH_TOKEN } from "@/constants/constants";
 
 export default async function Profile() {
-	const token = await getToken("session");
+	const token = await getToken(AUTH_TOKEN);
 	const decodedToken = jwtDecode(token) as Token;
 
 	return (
