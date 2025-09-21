@@ -77,13 +77,17 @@ export const columns = (
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Confirmar Remoção</DialogTitle>
+							<DialogTitle className="text-custom">Confirmar Remoção</DialogTitle>
+							<DialogDescription className="text-custom text-base">
+								Tem certeza que deseja remover esta conta {row.original.conta_id}?
+							</DialogDescription>
 						</DialogHeader>
-						<DialogDescription className="text-black">
-							Tem certeza que deseja remover esta conta?
-						</DialogDescription>
 						<DialogFooter>
-							<Button variant="outline" onClick={() => setOpenDialogId(null)}>
+							<Button
+								variant="outline"
+								className="text-custom"
+								onClick={() => setOpenDialogId(null)}
+							>
 								Cancelar
 							</Button>
 							<Button
