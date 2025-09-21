@@ -8,9 +8,11 @@ export default async function Profile() {
 	const decodedToken = jwtDecode(token) as Token;
 
 	return (
-		<div className="flex items-center gap-4">
-			<div className="flex flex-col justify-center bg-gray-400 rounded-[50%] text-center text-white h-1/2 w-1/2">
-				<span>{decodedToken.name.charAt(0).toUpperCase()}</span>
+		<div className="flex items-center gap-4 shadow-md rounded-2xl px-4 bg-[#f7f9fb]">
+			<div className="h-8 w-8 flex justify-center items-center rounded-[50%] bg-background-secondary">
+				<span className="text-custom">
+					{decodedToken.name.charAt(0).toLocaleUpperCase()}
+				</span>
 			</div>
 			<span className="text-sm">{decodedToken.name}</span>
 		</div>

@@ -11,7 +11,7 @@ import { logout } from "../_actions/logoutAction";
 export default function Avatar({ children }: { children: React.ReactNode }) {
 	return (
 		<ContextMenu>
-			<ContextMenuTrigger>{children}</ContextMenuTrigger>
+			<ContextMenuTrigger className="flex itemns-center">{children}</ContextMenuTrigger>
 			<ContextMenuContent datatype="bottom">
 				<ContextMenuItem>
 					<Button className="w-full bg-destructive" onClick={async () => await logout()}>
