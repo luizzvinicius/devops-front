@@ -81,7 +81,7 @@ export function CreatePessoaForm() {
 								onChange={e => {
 									field.handleChange(e.target.value);
 								}}
-								className="bg-background-secondary border-none placeholder-[#747f8f]"
+								className="bg-background-secondary border-none placeholder-[#747f8f] text-custom"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
@@ -102,7 +102,7 @@ export function CreatePessoaForm() {
 								placeholder="CPF"
 								value={field.state.value}
 								onChange={e => field.handleChange(e.target.value)}
-								className="bg-background-secondary border-none placeholder-[#747f8f]"
+								className="bg-background-secondary border-none placeholder-[#747f8f] text-custom"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
@@ -121,7 +121,7 @@ export function CreatePessoaForm() {
 								placeholder="Endereço"
 								value={field.state.value}
 								onChange={e => field.handleChange(e.target.value)}
-								className="bg-background-secondary border-none placeholder-[#747f8f]"
+								className="bg-background-secondary border-none placeholder-[#747f8f] text-custom"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
