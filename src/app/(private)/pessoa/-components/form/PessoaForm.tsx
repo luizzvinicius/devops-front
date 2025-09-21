@@ -70,17 +70,18 @@ export function CreatePessoaForm() {
 				<form.Field name="name">
 					{field => (
 						<div>
-							<Label htmlFor="name" className="text-xl">
+							<Label htmlFor="name" className="text-xl text-custom">
 								Nome
 							</Label>
 							<Input
 								id="name"
 								type="text"
 								value={field.state.value}
-								placeholder="Nome"
+								placeholder="Nome do cliente"
 								onChange={e => {
 									field.handleChange(e.target.value);
 								}}
+								className="bg-background-secondary border-none placeholder-[#747f8f]"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
@@ -90,7 +91,7 @@ export function CreatePessoaForm() {
 				<form.Field name="cpf">
 					{field => (
 						<div>
-							<Label htmlFor="cpf" className="text-xl">
+							<Label htmlFor="cpf" className="text-xl text-custom">
 								CPF
 							</Label>
 							<InputMask
@@ -101,6 +102,7 @@ export function CreatePessoaForm() {
 								placeholder="CPF"
 								value={field.state.value}
 								onChange={e => field.handleChange(e.target.value)}
+								className="bg-background-secondary border-none placeholder-[#747f8f]"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
@@ -110,7 +112,7 @@ export function CreatePessoaForm() {
 				<form.Field name="address">
 					{field => (
 						<div>
-							<Label htmlFor="address" className="text-xl">
+							<Label htmlFor="address" className="text-xl text-custom">
 								Endereço
 							</Label>
 							<Input
@@ -119,13 +121,16 @@ export function CreatePessoaForm() {
 								placeholder="Endereço"
 								value={field.state.value}
 								onChange={e => field.handleChange(e.target.value)}
+								className="bg-background-secondary border-none placeholder-[#747f8f]"
 							/>
 							<FieldInfo fieldMeta={field.state.meta} />
 						</div>
 					)}
 				</form.Field>
 				<div className="flex justify-center">
-					<Button type="submit">Salvar</Button>
+					<Button type="submit" className="bg-background-tertiary text-custom">
+						Salvar
+					</Button>
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
