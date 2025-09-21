@@ -89,7 +89,7 @@ export function CreateMovimentacao() {
 				<form.Field name="pessoa_id">
 					{field => (
 						<div>
-							<Label id="pessoa" className="text-xl">
+							<Label id="pessoa" className="text-xl text-custom">
 								Pessoa
 							</Label>
 							<Popover
@@ -107,7 +107,7 @@ export function CreateMovimentacao() {
 										variant="outline"
 										role="combobox"
 										aria-expanded={popOverStatus.pessoa}
-										className="w-1/2 justify-between"
+										className="w-1/2 justify-between text-custom"
 									>
 										{personId
 											? pessoasConta.pessoas.map(pessoa => {
@@ -173,7 +173,7 @@ export function CreateMovimentacao() {
 				<form.Field name="conta_id">
 					{field => (
 						<div>
-							<Label htmlFor="conta" className="text-xl">
+							<Label htmlFor="conta" className="text-xl text-custom">
 								Conta
 							</Label>
 							<Popover
@@ -191,7 +191,7 @@ export function CreateMovimentacao() {
 										variant="outline"
 										role="combobox"
 										aria-expanded={popOverStatus.conta}
-										className="w-1/2 justify-between"
+										className="w-1/2 justify-between text-custom"
 									>
 										{contaId
 											? pessoaEConta.pessoaAndContaDtoList.map(pessoa => {
@@ -259,12 +259,12 @@ export function CreateMovimentacao() {
 					<form.Field name="valor">
 						{field => (
 							<div>
-								<Label htmlFor="valor" className="text-xl">
+								<Label htmlFor="valor" className="text-xl text-custom">
 									Valor
 								</Label>
 								<InputMask
 									id="valor"
-									className="w-[200px]"
+									className="w-[200px] placeholder-[#f7f9fb] text-custom"
 									mask="99999999999999"
 									replacement={{ 9: /\d/ }}
 									component={Input}
@@ -284,7 +284,7 @@ export function CreateMovimentacao() {
 					<form.Field name="tipoMovimentacao">
 						{field => (
 							<div>
-								<Label id="movimentacao" className="text-xl">
+								<Label id="movimentacao" className="text-xl text-custom">
 									Movimentação
 								</Label>
 								<Select
@@ -293,7 +293,7 @@ export function CreateMovimentacao() {
 									}}
 									value={field.state.value as OperacaoValue}
 								>
-									<SelectTrigger className="w-[180px]">
+									<SelectTrigger className="w-[180px] text-custom">
 										<SelectValue placeholder="Operação" />
 									</SelectTrigger>
 									<SelectContent>
@@ -310,7 +310,9 @@ export function CreateMovimentacao() {
 					</form.Field>
 				</div>
 				<div className="flex justify-center">
-					<Button type="submit">Salvar</Button>
+					<Button type="submit" className="bg-background-tertiary text-custom">
+						Salvar
+					</Button>
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">

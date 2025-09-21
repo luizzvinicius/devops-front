@@ -30,7 +30,11 @@ export const columns: ColumnDef<MovimentacoesColumns>[] = [
 			const valorOriginal = row.original.valor;
 			const color = valorOriginal > 0 ? "text-green-300" : "text-red-300";
 			const valor = valorOriginal > 0 ? valorOriginal : Math.abs(valorOriginal);
-			return <div className={`${color}`}>{valor}</div>;
+			return (
+				<div className={`${color}`}>
+					{valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+				</div>
+			);
 		},
 	},
 	{
