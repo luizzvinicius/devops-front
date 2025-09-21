@@ -9,9 +9,9 @@
 
 @theme inline {
   --color-background: var(--background);
-  --color-backgorund-secondary: var(--background-secondary);
-  --color-backgorund-tertiary: var(--background-tertiary);
-  --color-backgorund-button: var(--button-primary);
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
+  --color-background-button: var(--button-primary);
   --text-color-custom: var(--text-custom);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
