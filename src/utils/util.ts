@@ -5,5 +5,5 @@ export function showCpfFormatted(cpf: string) {
 }
 
 export function showDateFormatted(date: Date) {
-	return format(date, "dd/MM/yyyy");
+	return format(date, "dd/MM/yyyy hh:mm:ss");
 }
