@@ -11,8 +11,8 @@ export default function PrivateLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<main className="min-h-screen flex flex-col bg-gray-100">
-			<div className="flex pr-10">
+		<main className="min-h-screen flex flex-col bg-background-secondary">
+			<div className="flex pr-10 my-2">
 				<Header />
 				<Avatar>
 					<Profile />
@@ -20,7 +20,7 @@ export default function PrivateLayout({
 			</div>
 			<QueryProvider>
 				<section className="flex-grow flex items-center justify-center">
-					<section className="w-full max-w-4xl p-4 bg-white shadow-md rounded-2xl">
+					<section className="w-full max-w-4xl p-4 bg-background shadow-md rounded-2xl">
 						{children}
 					</section>
 				</section>
