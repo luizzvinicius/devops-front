@@ -12,7 +12,9 @@ import { Landmark, LockKeyhole, Mail } from "lucide-react";
 import Spinner from "@/components/Spinner";
 
 export default function Login() {
-	const { executeAsync: loginRequest, isPending } = useAction(login);
+	const { executeAsync: loginRequest, isPending } = useAction(login, {
+		onError: () => toast.error("Login inválido"),
+	});
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -25,11 +27,7 @@ export default function Login() {
 	});
 
 	async function onSubmit(formData: LoginType) {
-		try {
-			await loginRequest({ email: formData.email, password: formData.password });
-		} catch {
-			toast.error("Login inválido");
-		}
+		await loginRequest({ email: formData.email, password: formData.password });
 	}
 
 	return (
