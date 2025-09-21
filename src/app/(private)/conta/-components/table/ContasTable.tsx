@@ -51,11 +51,18 @@ export const columns = (
 		accessorKey: "conta.saldo",
 		header: "Saldo",
 		cell: ({ row }) => {
-			return <div>{row.original.conta_saldo}</div>;
+			return (
+				<div>
+					{row.original.conta_saldo.toLocaleString("pt-BR", {
+						style: "currency",
+						currency: "BRL",
+					})}
+				</div>
+			);
 		},
 	},
 	{
-		header: "Remover",
+		header: "Remover conta",
 		cell: ({ row }) => {
 			const contaId = row.original.conta_id;
 			return (
@@ -65,7 +72,7 @@ export const columns = (
 				>
 					<DialogTrigger asChild>
 						<Button variant="destructive" size="sm">
-							Remover conta
+							Remover
 						</Button>
 					</DialogTrigger>
 					<DialogContent>

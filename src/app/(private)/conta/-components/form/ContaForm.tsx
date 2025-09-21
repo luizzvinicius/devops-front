@@ -74,7 +74,7 @@ export function CreateConta() {
 				<form.Field name="id">
 					{field => (
 						<div>
-							<Label id="pessoa" className="text-xl">
+							<Label id="pessoa" className="text-xl text-custom">
 								Pessoa
 							</Label>
 							<Popover open={open} onOpenChange={setOpen}>
@@ -84,7 +84,7 @@ export function CreateConta() {
 										variant="outline"
 										role="combobox"
 										aria-expanded={open}
-										className="w-1/2 justify-between"
+										className="w-1/2 justify-between text-custom"
 									>
 										{personId
 											? pessoasContas?.pessoas.map(pessoa => {
@@ -146,7 +146,9 @@ export function CreateConta() {
 					)}
 				</form.Field>
 				<div className="flex justify-center">
-					<Button type="submit">Criar conta</Button>
+					<Button type="submit" className="bg-background-tertiary">
+						Criar conta
+					</Button>
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
