@@ -31,7 +31,7 @@ export default function Login() {
 	}
 
 	return (
-		<div className="min-h-screen flex flex-col justify-center items-center gap-y-4">
+		<div className="min-h-screen flex flex-col justify-center items-center">
 			<form
 				onSubmit={e => {
 					e.preventDefault();
@@ -49,16 +49,16 @@ export default function Login() {
 						Login Gerente
 					</h1>
 				</div>
-				<div className="flex flex-col gap-y-3.5 bg-background-tertiary rounded-2xl px-4 py-4">
+				<div className="flex flex-col bg-background-tertiary rounded-2xl p-4 [&>*:nth-child(2n)]:mb-3.5">
+					<div className="flex items-center gap-2 mb-1">
+						<Mail className="text-custom size-4.5" />
+						<Label htmlFor="email" className="text-base text-custom">
+							Email
+						</Label>
+					</div>
 					<form.Field name="email">
 						{field => (
 							<div>
-								<div className="flex items-center gap-2 mb-1">
-									<Mail className="text-custom size-4.5" />
-									<Label htmlFor="email" className="text-base text-custom">
-										Email
-									</Label>
-								</div>
 								<Input
 									id="email"
 									type="email"
@@ -73,15 +73,15 @@ export default function Login() {
 							</div>
 						)}
 					</form.Field>
+					<div className="flex items-center gap-2 mb-1">
+						<LockKeyhole className="text-custom size-4.5" />
+						<Label htmlFor="password" className="text-base text-custom">
+							Senha
+						</Label>
+					</div>
 					<form.Field name="password">
 						{field => (
 							<div>
-								<div className="flex items-center gap-2 mb-1">
-									<LockKeyhole className="text-custom size-4.5" />
-									<Label htmlFor="password" className="text-base text-custom">
-										Senha
-									</Label>
-								</div>
 								<Input
 									id="password"
 									type="password"

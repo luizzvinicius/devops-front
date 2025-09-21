@@ -65,14 +65,14 @@ export function CreatePessoaForm() {
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="flex flex-col gap-y-4"
+				className="[&>*:nth-child(2n)]:mb-3.5"
 			>
+				<Label htmlFor="name" className="text-xl text-custom">
+					Nome
+				</Label>
 				<form.Field name="name">
 					{field => (
 						<div>
-							<Label htmlFor="name" className="text-xl text-custom">
-								Nome
-							</Label>
 							<Input
 								id="name"
 								type="text"
@@ -88,12 +88,12 @@ export function CreatePessoaForm() {
 					)}
 				</form.Field>
 
+				<Label htmlFor="cpf" className="text-xl text-custom">
+					CPF
+				</Label>
 				<form.Field name="cpf">
 					{field => (
 						<div>
-							<Label htmlFor="cpf" className="text-xl text-custom">
-								CPF
-							</Label>
 							<InputMask
 								id="cpf"
 								mask="___.___.___-__"
@@ -109,12 +109,12 @@ export function CreatePessoaForm() {
 					)}
 				</form.Field>
 
+				<Label htmlFor="address" className="text-xl text-custom">
+					Endereço
+				</Label>
 				<form.Field name="address">
 					{field => (
 						<div>
-							<Label htmlFor="address" className="text-xl text-custom">
-								Endereço
-							</Label>
 							<Input
 								id="address"
 								type="text"
@@ -127,6 +127,7 @@ export function CreatePessoaForm() {
 						</div>
 					)}
 				</form.Field>
+
 				<div className="flex justify-center">
 					<Button type="submit" className="bg-background-tertiary text-custom">
 						Salvar
