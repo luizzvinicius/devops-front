@@ -40,7 +40,7 @@ export default function Login() {
 					e.stopPropagation();
 					form.handleSubmit();
 				}}
-				className="w-[50%] flex flex-col gap-y-5 py-8 px-4 max-w-4xl bg-backgorund-secondary shadow-md rounded-2xl"
+				className="w-[50%] flex flex-col gap-y-5 py-8 px-4 max-w-4xl bg-background-secondary shadow-md rounded-2xl"
 			>
 				<div className="flex flex-col gap-y-4">
 					<div className="flex justify-center items-center gap-2">
@@ -51,7 +51,7 @@ export default function Login() {
 						Login Gerente
 					</h1>
 				</div>
-				<div className="flex flex-col gap-y-3.5 bg-backgorund-tertiary rounded-2xl px-4 py-4">
+				<div className="flex flex-col gap-y-3.5 bg-background-tertiary rounded-2xl px-4 py-4">
 					<form.Field name="email">
 						{field => (
 							<div>
@@ -69,7 +69,7 @@ export default function Login() {
 									onChange={e => {
 										field.handleChange(e.target.value);
 									}}
-									className="bg-backgorund-secondary border-none placeholder-[#747f8f]"
+									className="bg-background-secondary border-none placeholder-[#747f8f]"
 								/>
 								<FieldInfo fieldMeta={field.state.meta} />
 							</div>
@@ -92,7 +92,7 @@ export default function Login() {
 									onChange={e => {
 										field.handleChange(e.target.value);
 									}}
-									className="bg-backgorund-secondary border-none placeholder-[#747f8f]"
+									className="bg-background-secondary border-none placeholder-[#747f8f]"
 								/>
 								<FieldInfo fieldMeta={field.state.meta} />
 							</div>
@@ -101,7 +101,7 @@ export default function Login() {
 					<div className="flex justify-center">
 						<Button
 							type="submit"
-							className="w-1/2 py-5 text-base bg-backgorund-button text-custom"
+							className="w-1/2 py-5 text-base bg-background-button text-custom"
 						>
 							{isPending ? <Spinner /> : "Login"}
 						</Button>
