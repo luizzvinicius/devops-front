@@ -3,8 +3,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.borda {
+  border: 1px solid red
+}
+
 @theme inline {
   --color-background: var(--background);
+  --color-backgorund-secondary: var(--background-secondary);
+  --color-backgorund-tertiary: var(--background-tertiary);
+  --color-backgorund-button: var(--button-primary);
+  --text-color-custom: var(--text-custom);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -45,7 +53,11 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: #3f5f88;
+  --background-secondary: #192e47;
+  --background-tertiary: #112234;
+  --button-primary: #2e71bd;
+  --text-custom: #f7f9fb;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
