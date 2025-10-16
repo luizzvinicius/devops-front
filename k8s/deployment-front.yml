@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: front-configmap-prod
+data:
+  NODE_ENV: "production"
+  NEXT_PUBLIC_BASE_URL: "http://backend:8080/api/v1"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: devops-front
+  name: devops-front
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devops-front
+  template:
+    metadata:
+      labels:
+        app: devops-front
+    spec:
+      containers:
+      - image: luizvinicius/bank-front:1.0
+        name: bank-front
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: front-configmap-prod
+              key: NODE_ENV
+        - name: NEXT_PUBLIC_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: front-configmap-prod
+              key: NEXT_PUBLIC_BASE_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deployment-front
+  name: deployment-front
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: deployment-front
