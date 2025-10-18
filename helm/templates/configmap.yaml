@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}
+data:
+  NODE_ENV: {{ .Values.env.NODE_ENV }}
+  NEXT_PUBLIC_BASE_URL: {{ .Values.env.NEXT_PUBLIC_BASE_URL }}
