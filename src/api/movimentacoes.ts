@@ -1,5 +1,4 @@
-import axios from "axios";
-import { BASE_URL } from "@/constants/constants";
+import { api } from "@/lib/api";
 import type {
 	MovimentacoesRequestDto,
 	MovimentacoesResponseDto,
@@ -8,10 +7,10 @@ import type {
 const ENTITY = "/movimentacoes";
 
 export const createMovimentacao = async (params: MovimentacoesRequestDto) => {
-	const { data } = await axios.post<MovimentacoesResponseDto>(`${BASE_URL}${ENTITY}`, params);
+	const { data } = await api.post<MovimentacoesResponseDto>(`${ENTITY}`, params);
 	return data;
 };
 
 export async function deleteMovimentacao(idMovimentacao: number) {
-	await axios.delete(`${BASE_URL}${ENTITY}/${idMovimentacao}`);
+	await api.delete(`${ENTITY}/${idMovimentacao}`);
 }
