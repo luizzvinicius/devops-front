@@ -31,14 +31,15 @@ jobs:
           VERSION=${{ github.ref_name }}
           echo "Atualizando Chart.yaml para versão $VERSION"
           sed -i "s/^version:.*/version: $VERSION/" helm/Chart.yaml
-          sed -i "s/^tag:.*/tag: $VERSION/" helm/values.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" helm/Chart.yaml
+          sed -i "s/^\(\s*tag:\s*\).*/\1\"$VERSION\"/" helm/values.yaml
 
       - name: Commit and push updated Chart.yaml
         if: startsWith(github.ref, 'refs/tags/')
         env:
           REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: |
-          git add helm/Chart.yaml
+          git add helm/Chart.yaml helm/values.yaml
           git commit -m "[no ci] chore: update Helm Chart version to $VERSION" || echo "Nada para commitar"
           git push origin HEAD:main
 
