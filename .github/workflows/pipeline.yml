@@ -24,6 +24,12 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
+      
+      - name: Sync main
+        run: |
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
 
       - name: Update Helm Chart version
         if: startsWith(github.ref, 'refs/tags/')
@@ -39,7 +45,6 @@ jobs:
         env:
           REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: |
-          git pull origin main
           git add helm/Chart.yaml helm/values.yaml
           git commit -m "[no ci] chore: update Helm Chart version to ${{ github.ref_name }}" || echo "Nada para commitar"
           git push origin HEAD:main
