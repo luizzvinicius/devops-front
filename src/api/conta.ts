@@ -1,5 +1,5 @@
-import axios from "axios";
-import { BASE_URL } from "@/constants/constants";
+import { api } from "@/lib/api";
+
 import type {
 	ContaMovimentacoesResponseDto,
 	ContaRequestDto,
@@ -9,8 +9,8 @@ import type {
 const ENTITY = "/conta";
 
 export async function contaMovimentacoes(contaId: string, page: number) {
-	const { data } = await axios.get<ContaMovimentacoesResponseDto>(
-		`${BASE_URL}${ENTITY}/${contaId}/movimentacoes`,
+	const { data } = await api.get<ContaMovimentacoesResponseDto>(
+		`${ENTITY}/${contaId}/movimentacoes`,
 		{
 			params: {
 				page,
@@ -21,11 +21,11 @@ export async function contaMovimentacoes(contaId: string, page: number) {
 }
 
 export const criarConta = async (params: ContaRequestDto) => {
-	const { data } = await axios.post<ContaResponseDto>(`${BASE_URL}${ENTITY}`, params);
+	const { data } = await api.post<ContaResponseDto>(`${ENTITY}`, params);
 	return data;
 };
 
 export async function deleteConta(id: string) {
-	const { data } = await axios.delete(`${BASE_URL}${ENTITY}/${id}`);
+	const { data } = await api.delete(`${ENTITY}/${id}`);
 	return data;
 }
