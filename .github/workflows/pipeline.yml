@@ -9,9 +9,39 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
+  update-chart:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+
+      - name: Update Helm Chart version
+        run: |
+          VERSION=${{ github.ref_name }}
+          echo "Atualizando Chart.yaml para versão $VERSION"
+          sed -i "s/^version:.*/version: $VERSION/" helm/Chart.yaml
+
+      - name: Commit and push updated Chart.yaml
+        env:
+          REPOSITORY_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
+        run: |
+          git add helm/Chart.yaml
+          git commit -m "[no ci] chore: update Helm Chart version to ${{ github.ref_name }}"
+          git push
+
   build:
     runs-on: ubuntu-latest
+    needs: update-chart
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,3 +70,4 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/bank-front:${{ github.ref_name }}
+  
