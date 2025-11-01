@@ -11,3 +11,5 @@ README.md
 .github
 .gitignore
 biome.json
+helm
+k8s
