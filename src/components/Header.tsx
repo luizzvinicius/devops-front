@@ -14,6 +14,10 @@ export function Header() {
 			<Link href="/movimentacao" className="text-custom hover:underline hover:text-blue-400">
 				Movimentação
 			</Link>
+			<p className="text-custom">|</p>
+			<Link href="/investimentos" className="text-custom hover:underline hover:text-blue-400">
+				Investimentos
+			</Link>
 		</nav>
 	);
 }
