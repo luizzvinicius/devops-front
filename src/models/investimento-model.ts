@@ -16,6 +16,8 @@ export type InvestimentoResponseDto = {
 	idInvestimento: number;
 	tipoInvestimento: string;
 	totalInvestido: number;
+	taxa: number;
+	dataInicio: Date;
 	resgate: Date;
 };
 
@@ -27,6 +29,9 @@ export type ContaInvestimentos = {
 };
 
 export type InvestimentoRow = {
+	idInvestimento: number;
+	taxa: number;
+	dataInicio: Date;
 	idConta: string;
 	tipoInvestimento: string;
 	totalInvestido: number;

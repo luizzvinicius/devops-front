@@ -1,11 +1,14 @@
 import { createInvestimento, getContaInvestimentos } from "@/api/investimentos";
-import { InvestimentoRequestDto, InvestimentoRow } from "@/models/investimento-model";
+import type { InvestimentoRequestDto, InvestimentoRow } from "@/models/investimento-model";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const defaultDataInvestimentosConta = [
 	{
 		idConta: "",
+		idInvestimento: 0,
+		taxa: 0,
+		dataInicio: new Date(),
 		tipoInvestimento: 0,
 		totalInvestido: 0,
 		resgate: new Date(),

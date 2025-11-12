@@ -21,3 +21,7 @@ export async function createInvestimento(params: InvestimentoRequestDto) {
 	);
 	return data;
 }
+
+export async function saqueInvestimento(idInvestimento: number, saque: number) {
+	await axiosInstance.put(`${BASE_URL}${ENTITY}/${idInvestimento}`, { saque });
+}

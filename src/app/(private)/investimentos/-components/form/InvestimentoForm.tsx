@@ -63,7 +63,6 @@ export default function InvestimentoForm() {
 	});
 
 	async function onSubmit(formData: CreateInvestimentoType) {
-		console.log(formData);
 		try {
 			await createInvestimento({
 				idConta: formData.conta_id,
