@@ -108,4 +108,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bank-front:${{ github.ref_name }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/bank-front:${{ needs.check-release.outputs.version }}
