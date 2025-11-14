@@ -1,6 +1,6 @@
 # DevOps Frontend - Dev Container Tutorial
 
-This tutorial will guide you through setting up and running this Next.js banking frontend application using Visual Studio Code Dev Containers.
+This tutorial will guide you through setting up and running this Next.js banking frontend application using Visual Studio Code Dev Containers
 
 > The backend container must be created before front-end container because it will create the frontend network.
 
