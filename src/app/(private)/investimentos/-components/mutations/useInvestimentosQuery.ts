@@ -3,17 +3,17 @@ import type { InvestimentoRequestDto, InvestimentoRow } from "@/models/investime
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-const defaultDataInvestimentosConta = [
+const defaultDataInvestimentosConta: InvestimentoRow[] = [
 	{
 		idConta: "",
 		idInvestimento: 0,
 		taxa: 0,
-		dataInicio: new Date(),
-		tipoInvestimento: 0,
+		dataInicio: new Date(20, 5, 2000),
+		tipoInvestimento: "0",
 		totalInvestido: 0,
-		resgate: new Date(),
+		resgate: new Date(20, 5, 2000),
 	},
-] as const;
+];
 export const useInvestimentos = (contaId: string) => {
 	return useQuery({
 		initialData: defaultDataInvestimentosConta,
@@ -43,15 +43,18 @@ export function useCreateInvestimento(contaId: string) {
 			if (!data) return;
 
 			queryClient.setQueryData(["investimentosConta", contaId], (old: InvestimentoRow[]) => {
-				const investimento = {
+				const investimento: InvestimentoRow = {
 					idConta: contaId,
 					tipoInvestimento: data.tipoInvestimento,
 					totalInvestido: data.totalInvestido,
 					resgate: data.resgate,
+					dataInicio: data.dataInicio,
+					idInvestimento: data.idInvestimento,
+					taxa: data.taxa,
 				};
 
 				if (old.length === 0) {
-					[investimento];
+					return [investimento];
 				}
 
 				return [investimento, ...old];
