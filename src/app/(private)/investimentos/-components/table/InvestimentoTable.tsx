@@ -101,7 +101,6 @@ export const columns = (
 				row.original.totalInvestido,
 				row.original.taxa,
 			);
-
 			const chartConfig = {
 				montante: {
 					label: "montante",
@@ -234,7 +233,13 @@ export const columns = (
 export default function investimentoTable({ investimentos }: { investimentos: InvestimentoRow[] }) {
 	const [openDialogId, setOpenDialogId] = useState<number | null>(null);
 
-	const data = investimentos[0].idConta === "" ? [] : investimentos;
+	const data =
+		!investimentos ||
+		investimentos.length === 0 ||
+		(investimentos.length === 1 && investimentos[0].tipoInvestimento === "0")
+			? []
+			: investimentos;
+
 	return (
 		<DataTable columns={columns(openDialogId, setOpenDialogId)} data={data} searchFields={[]} />
 	);
