@@ -7,4 +7,5 @@ export const PRIVATE_ROUTES = [
 	{ path: "/pessoa", action: "next" },
 	{ path: "/conta", action: "next" },
 	{ path: "/movimentacao", action: "next" },
+	{ path: "/investimentos", action: "next" },
 ] as const;
