@@ -16,12 +16,11 @@ export function generateChartPrevision(dataResgate: Date, totalInvestido: number
 		{ month: format(now, "MMM"), montante: totalInvestido },
 	];
 
-	let amount = totalInvestido;
 	let monthPrevision = "";
 	for (let i = 1; i <= differenceInMonthsNowAndEndDate + 1; i++) {
 		monthPrevision = format(addMonths(now, i), "MMM");
-		amount *= 1 + taxa / 12;
-		const rounded = Math.round(amount * 100) / 100;
+		totalInvestido *= 1 + taxa / 12;
+		const rounded = Math.round(totalInvestido * 100) / 100;
 		result.push({ month: monthPrevision, montante: rounded });
 	}
 
