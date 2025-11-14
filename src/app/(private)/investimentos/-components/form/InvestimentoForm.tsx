@@ -292,8 +292,8 @@ export default function InvestimentoForm() {
 							<InputMask
 								id="valor"
 								className="w-[200px] placeholder-[#f7f9fb] text-custom"
-								mask="99999999999999"
-								replacement={{ 9: /\d/ }}
+								mask="___________"
+								replacement={{ _: /\d/ }}
 								component={Input}
 								placeholder="Quanto deseja investir?"
 								value={field.state.value === 0 ? "" : field.state.value}
@@ -315,16 +315,7 @@ export default function InvestimentoForm() {
 				</div>
 			</form>
 			<div className="h-[300px] overflow-y-auto">
-				<InvestimentoTable
-					investimentos={
-						contaInvestimentos
-							? contaInvestimentos.map(inv => ({
-									...inv,
-									tipoInvestimento: String(inv.tipoInvestimento),
-								}))
-							: []
-					}
-				/>
+				<InvestimentoTable investimentos={contaInvestimentos} />
 			</div>
 		</div>
 	);
