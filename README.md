@@ -1,4 +1,4 @@
-# DevOps Frontend - Dev Container Tutorial.
+# DevOps Frontend - Dev Container Tutorial
 
 This tutorial will guide you through setting up and running this Next.js banking frontend application using Visual Studio Code Dev Containers.
 
