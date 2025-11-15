@@ -11,7 +11,7 @@ const env = z
 	})
 	.parse(process.env);
 
-const clientPrefixs = ["NEXT_PUBLIC_", "CLIENT_"] as const;
+const clientPrefixs = ["NEXT_PUBLIC_", "CLIENT_"] as const
 
 type NextPublicEnv<T> = {
 	[K in keyof T as K extends `${(typeof clientPrefixs)[number]}${string}` ? K : never]: T[K];
