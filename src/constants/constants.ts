@@ -17,7 +17,7 @@ type NextPublicEnv<T> = {
 	[K in keyof T as K extends `${(typeof clientPrefixs)[number]}${string}` ? K : never]: T[K];
 };
 
-const getClientEnv = <T extends Record<string, unknown>>(env: T): NextPublicEnv<T> => {
+export const getClientEnv = <T extends Record<string, unknown>>(env: T): NextPublicEnv<T> => {
 	const clientEnv = {} as NextPublicEnv<T>;
 	Object.entries(env).forEach(([key, value]) => {
 		if (clientPrefixs.some(prefix => key.startsWith(prefix))) {

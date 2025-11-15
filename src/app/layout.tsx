@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query";
 import { ApiProvider } from "@/providers/api-provider";
-import { clientEnvs } from "@/constants/constants";
+import { clientEnvs, getClientEnv } from "@/constants/constants";
 import { connection } from "next/server";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 	return (
 		<html lang="pt-BR">
 			<body className="min-h-screen flex flex-col bg-gray-100">
-				<DynamicClientEnvironmentProvider initialEnv={clientEnvs} />
+				<DynamicClientEnvironmentProvider initialEnv={getClientEnv(process.env)} />
 				<ApiProvider />
 				<QueryProvider>
 					<Header />
