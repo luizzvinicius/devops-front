@@ -5,3 +5,4 @@ metadata:
 data:
   NODE_ENV: {{ .Values.env.NODE_ENV }}
   NEXT_PUBLIC_BASE_URL: {{ .Values.env.NEXT_PUBLIC_BASE_URL }}
+  CLIENT_BASE_URL: {{ .Values.env.CLIENT_BASE_URL }}
