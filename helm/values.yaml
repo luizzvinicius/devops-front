@@ -2,6 +2,10 @@ image:
   repository: "luizvinicius/bank-front"
   tag: "1.0.3"
 
+rollout:
+  enabled: true
+strategy: "bluegreen"
+
 replicas: "1"
 
 service:

@@ -1,0 +1,39 @@
+{{- if .Values.rollout.enabled }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 2
+  strategy:
+    {{- if eq .Values.strategy "bluegreen" }}
+    blueGreen:
+      autoPromotionEnabled: false
+      activeService: {{ .Release.Name }}
+      previewService: {{ .Release.Name }}-preview
+    {{- end }}
+
+    {{- if eq .Values.strategy "canary" }}
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: {}
+        - setWeight: 50
+        - pause: {}
+    {{- end }}
+
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.port }}
+{{- end }}
