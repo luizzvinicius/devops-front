@@ -23,7 +23,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 				<QueryProvider>
 					<Header />
 					<main className="flex-grow flex items-center justify-center">
-						<section className="w-full max-w-4xl p-4 bg-yellow-500 shadow-md rounded-2xl">
+						<section className="w-full max-w-4xl p-4 bg-blue-300 shadow-md rounded-2xl">
 							{children}
 						</section>
 						<Toaster richColors position="bottom-right" expand={true} />
