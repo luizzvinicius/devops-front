@@ -1,115 +1,13 @@
 "use client";
 import type { AnyFormApi } from "@tanstack/react-form";
-import { Button } from "@/components/ui/button";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/data-table";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
-import { showCpfFormatted } from "@/utils/util";
 import type { PessoaEConta } from "@/models/pessoa-model";
 import { useState } from "react";
-import { toast } from "sonner";
+import { columns } from "./columns"
+import { DataTable } from "./data-table"
 
 type ContasTableRow = PessoaEConta & {
 	form: AnyFormApi;
 };
-
-export const columns = (
-	openDialogId: string | null,
-	setOpenDialogId: (id: string | null) => void,
-	deleteConta: (id: string) => Promise<void>,
-): ColumnDef<ContasTableRow>[] => [
-	{
-		accessorKey: "nome",
-		header: "Nome",
-		cell: ({ row }) => {
-			return <div>{row.original.nome}</div>;
-		},
-	},
-	{
-		accessorKey: "cpf",
-		header: "CPF",
-		cell: ({ row }) => {
-			return <div>{showCpfFormatted(row.original.cpf)}</div>;
-		},
-	},
-	{
-		accessorKey: "conta.id",
-		header: "Número conta",
-		cell: ({ row }) => {
-			return <div>{row.original.conta_id}</div>;
-		},
-	},
-	{
-		accessorKey: "conta.saldo",
-		header: "Saldo",
-		cell: ({ row }) => {
-			return (
-				<div>
-					{row.original.conta_saldo.toLocaleString("pt-BR", {
-						style: "currency",
-						currency: "BRL",
-					})}
-				</div>
-			);
-		},
-	},
-	{
-		header: "Remover conta",
-		cell: ({ row }) => {
-			const contaId = row.original.conta_id;
-			return (
-				<Dialog
-					open={openDialogId === contaId}
-					onOpenChange={open => setOpenDialogId(open ? contaId : null)}
-				>
-					<DialogTrigger asChild>
-						<Button variant="destructive" size="sm">
-							Remover
-						</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle className="text-custom">Confirmar Remoção</DialogTitle>
-							<DialogDescription className="text-custom text-base">
-								Tem certeza que deseja remover esta conta {row.original.conta_id}?
-							</DialogDescription>
-						</DialogHeader>
-						<DialogFooter>
-							<Button
-								variant="outline"
-								className="text-custom"
-								onClick={() => setOpenDialogId(null)}
-							>
-								Cancelar
-							</Button>
-							<Button
-								variant="destructive"
-								onClick={async () => {
-									try {
-										await deleteConta(contaId);
-									} catch {
-										toast.error("Erro ao deletar conta");
-									}
-									setOpenDialogId(null);
-								}}
-							>
-								Remover conta
-							</Button>
-						</DialogFooter>
-					</DialogContent>
-				</Dialog>
-			);
-		},
-	},
-];
 
 export default function ContasTable({
 	pessoaConta,
@@ -121,19 +19,35 @@ export default function ContasTable({
 	deleteConta: (id: string) => Promise<void>;
 }) {
 	const [openDialogId, setOpenDialogId] = useState<string | null>(null);
+	const dataMock = [
+		{
+			id: 1,
+			endereco: "qualquer",
+			nome: "Vinicius",
+			cpf: "12345678901",
+			conta_id: "123456",
+			conta_saldo: 1000,
+			form,
+		},
+		{
+			id: 2,
+			endereco: "nenhum",
+			nome: "Ana",
+			cpf: "1234568748",
+			conta_id: "1234564",
+			conta_saldo: 3000,
+			form,
+		},
+	]
 	const data: ContasTableRow[] =
 		pessoaConta[0]?.nome === ""
 			? []
 			: pessoaConta.map(pessoa => ({
-					...pessoa,
-					form,
-				}));
+				...pessoa,
+				form,
+			}));
 
 	return (
-		<DataTable
-			columns={columns(openDialogId, setOpenDialogId, deleteConta)}
-			data={data}
-			searchFields={["nome", "cpf"]}
-		/>
+		<DataTable data={dataMock} columns={columns(deleteConta, openDialogId, setOpenDialogId)} />
 	);
 }
