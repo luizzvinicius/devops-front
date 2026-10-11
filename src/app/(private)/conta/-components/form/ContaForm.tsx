@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useRef, useState } from "react";
+import type { PaginationState } from "@tanstack/react-table";
 import {
 	useBuscarPessoaEConta,
 	useCreateConta,
@@ -34,11 +35,15 @@ export function CreateConta() {
 	const personName = useDebounce<string>(personNameInput, 1000);
 	const [personId, setPersonId] = useState<number>(0);
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
 
 	/*Queries */
 	const { data: pessoasContas } = usePessoasConta(personName, 0);
-	const { mutateAsync: createConta } = useCreateConta(personName);
-	const { data: pessoaEConta } = useBuscarPessoaEConta(personId);
+	const { mutateAsync: createConta } = useCreateConta();
+	const { data: pessoaEConta } = useBuscarPessoaEConta(personId, pagination.pageIndex);
 	const { mutateAsync: deleteConta } = useDeleteConta(personId);
 
 	const form = useForm({
@@ -88,9 +93,10 @@ export function CreateConta() {
 									>
 										{personId
 											? pessoasContas?.pessoas.map(pessoa => {
-													if (pessoa.id === personId)
-														return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
-												})
+												if (pessoa.id === personId) {
+													return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
+												}
+											})
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
@@ -122,6 +128,7 @@ export function CreateConta() {
 														onSelect={() => {
 															field.handleChange(pessoa.id);
 															setPersonId(pessoa.id);
+															setPagination(prev => ({ ...prev, pageIndex: 0 }));
 															setOpen(false);
 														}}
 													>
@@ -153,9 +160,14 @@ export function CreateConta() {
 			</form>
 			<div className="h-[300px] overflow-y-auto">
 				<ContasTable
-					pessoaConta={pessoaEConta.pessoaAndContaDtoList}
+					pessoaConta={pessoaEConta}
 					form={form}
 					deleteConta={deleteConta}
+					pageCount={pessoaEConta.pageSize > 0
+						? Math.ceil(pessoaEConta.totalElements / pessoaEConta.pageSize)
+						: 0}
+					pagination={pagination}
+					onPaginationChange={setPagination}
 				/>
 			</div>
 		</div>

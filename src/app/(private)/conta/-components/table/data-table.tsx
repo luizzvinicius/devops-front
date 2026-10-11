@@ -1,7 +1,6 @@
 "use client"
 import {
-  useTable, type ColumnDef, type RowData, type SortingState,
-  type ColumnFiltersState,
+  useTable, type ColumnDef, type RowData, type SortingState, type ColumnFiltersState, type PaginationState, type OnChangeFn,
 } from "@tanstack/react-table"
 import * as React from "react"
 import {
@@ -20,11 +19,17 @@ import { Input } from "@/components/ui/input"
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[]
   data: TData[]
+  pageCount: number
+  pagination: PaginationState
+  onPaginationChange: OnChangeFn<PaginationState>
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
+  pageCount,
+  pagination,
+  onPaginationChange,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -35,6 +40,9 @@ export function DataTable<TData extends RowData>({
     features,
     data,
     columns,
+    manualPagination: true,
+    pageCount,
+    onPaginationChange,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
@@ -42,6 +50,7 @@ export function DataTable<TData extends RowData>({
       sorting,
       columnFilters,
       rowSelection,
+      pagination,
     },
   })
 

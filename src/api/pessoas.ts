@@ -42,9 +42,9 @@ export async function buscarPessoasFilter(nome: string, page: number) {
 	return data;
 }
 
-export async function buscarPessoaEConta(id: number) {
+export async function buscarPessoaEConta(id: number, page: number) {
 	const { data } = await axiosInstance.get<PessoaContaResponse>(
-		`${BASE_URL}${ENTITY}/contas/${id}`,
+		`${BASE_URL}${ENTITY}/contas/${id}?page=${page}`,
 	);
 	return data;
 }
