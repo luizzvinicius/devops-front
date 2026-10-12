@@ -1,62 +1,39 @@
+"use client";
 import type { AnyFormApi } from "@tanstack/react-form";
-import type { ColumnDef } from "@tanstack/react-table";
-import { DataTable } from "@/components/ui/data-table";
-import type { ContaMovimentacoesDto } from "@/models/conta-model";
-import { showDateFormatted } from "@/utils/util";
+import type { ContaMovimentacoesDto, ContaMovimentacoesResponseDto } from "@/models/conta-model";
+import { DataTable } from "./data-table";
+import { columns } from "./columns";
+import type { OnChangeFn, PaginationState } from "@tanstack/react-table";
 
-type MovimentacoesColumns = ContaMovimentacoesDto & {
+type MovimentacoesTableRow = ContaMovimentacoesDto & {
 	form: AnyFormApi;
 };
 
-export const columns: ColumnDef<MovimentacoesColumns>[] = [
-	{
-		accessorKey: "contaId",
-		header: "Conta",
-		cell: ({ row }) => {
-			return <div>{row.original.contaId}</div>;
-		},
-	},
-	{
-		accessorKey: "movimentacaoId",
-		header: "Id movimentação",
-		cell: ({ row }) => {
-			return <div>{row.original.movimentacaoId}</div>;
-		},
-	},
-	{
-		accessorKey: "valor",
-		header: "Valor",
-		cell: ({ row }) => {
-			const valorOriginal = row.original.valor;
-			const color = valorOriginal > 0 ? "text-green-300" : "text-red-300";
-			const valor = valorOriginal > 0 ? valorOriginal : Math.abs(valorOriginal);
-			return (
-				<div className={`${color}`}>
-					{valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-				</div>
-			);
-		},
-	},
-	{
-		accessorKey: "dataMovimentacao",
-		header: "Data",
-		cell: ({ row }) => {
-			const data = new Date(row.original.dataMovimentacao);
-			return <div>{showDateFormatted(data)}</div>;
-		},
-	},
-];
-
 export default function MovimentacoesTable({
-	movimentacoes,
+	contaMovimentacoes,
 	form,
+	pageCount,
+	pagination,
+	onPaginationChange,
 }: {
-	movimentacoes: ContaMovimentacoesDto[];
+	contaMovimentacoes: ContaMovimentacoesResponseDto;
 	form: AnyFormApi;
+	pageCount: number;
+	pagination: PaginationState;
+	onPaginationChange: OnChangeFn<PaginationState>;
 }) {
-	const data = movimentacoes.map(mov => ({
+	const data: MovimentacoesTableRow[] = contaMovimentacoes.contaMovimentacoes.map(mov => ({
 		...mov,
 		form,
 	}));
-	return <DataTable columns={columns} data={data} searchFields={[]} />;
+
+	return (
+		<DataTable
+			data={data}
+			columns={columns}
+			pageCount={pageCount}
+			pagination={pagination}
+			onPaginationChange={onPaginationChange}
+		/>
+	);
 }

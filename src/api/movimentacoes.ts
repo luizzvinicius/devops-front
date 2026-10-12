@@ -15,7 +15,3 @@ export async function createMovimentacao(params: MovimentacoesRequestDto) {
 	);
 	return data;
 }
-
-export async function deleteMovimentacao(idMovimentacao: number) {
-	await axiosInstance.delete(`${BASE_URL}${ENTITY}/${idMovimentacao}`);
-}

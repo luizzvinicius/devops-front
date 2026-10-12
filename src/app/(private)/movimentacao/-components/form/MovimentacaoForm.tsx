@@ -35,6 +35,7 @@ import {
 	useBuscarPessoaEConta,
 	usePessoasConta,
 } from "@/app/(private)/conta/-components/mutations/useContaQuery";
+import type { PaginationState } from "@tanstack/react-table";
 
 export function CreateMovimentacao() {
 	const [popOverStatus, setPopOverStatus] = useState({
@@ -46,10 +47,19 @@ export function CreateMovimentacao() {
 	const [personNameInput, setPersonNameInput] = useState("");
 	const personName = useDebounce<string>(personNameInput, 1000);
 	const triggerRef = useRef<HTMLButtonElement>(null);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
+
 	/*Queries */
 	const { data: pessoasConta } = usePessoasConta(personName, 0);
-	const { data: pessoaEConta } = useBuscarPessoaEConta(personId);
-	const { data: contaMovimentacoes } = useContaMovimentacoes(personId, contaId, 0);
+	const { data: pessoaEConta } = useBuscarPessoaEConta(personId, pagination.pageIndex);
+	const { data: contaMovimentacoes } = useContaMovimentacoes(
+		personId,
+		contaId,
+		pagination.pageIndex,
+	);
 	const { mutateAsync: createMovimentacao } = useCreateMovimentacao(personId);
 
 	const form = useForm({
@@ -111,9 +121,9 @@ export function CreateMovimentacao() {
 									>
 										{personId
 											? pessoasConta.pessoas.map(pessoa => {
-													if (pessoa.id === personId)
-														return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
-												})
+												if (pessoa.id === personId)
+													return `${pessoa.nome} - ${showCpfFormatted(pessoa.cpf)}`;
+											})
 											: "Selecione uma pessoa"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
@@ -144,6 +154,7 @@ export function CreateMovimentacao() {
 															field.handleChange(pessoa.id);
 															setPessoaId(pessoa.id);
 															setContaId("");
+															setPagination(prev => ({ ...prev, pageIndex: 0 }));
 															setPopOverStatus({
 																...popOverStatus,
 																pessoa: false,
@@ -195,10 +206,10 @@ export function CreateMovimentacao() {
 									>
 										{contaId
 											? pessoaEConta.pessoaAndContaDtoList.map(pessoa => {
-													return pessoa.conta_id === contaId
-														? pessoa.conta_id
-														: "";
-												})
+												return pessoa.conta_id === contaId
+													? pessoa.conta_id
+													: "";
+											})
 											: "Selecione uma conta"}
 										<ChevronsUpDown className="opacity-50" />
 									</Button>
@@ -228,6 +239,7 @@ export function CreateMovimentacao() {
 																	pessoaConta.conta_id,
 																);
 																setContaId(pessoaConta.conta_id);
+																setPagination(prev => ({ ...prev, pageIndex: 0 }));
 																setPopOverStatus({
 																	...popOverStatus,
 																	conta: false,
@@ -318,7 +330,14 @@ export function CreateMovimentacao() {
 			<div className="h-[300px] overflow-y-auto">
 				<MovimentacoesTable
 					form={form}
-					movimentacoes={contaMovimentacoes.contaMovimentacoes}
+					contaMovimentacoes={contaMovimentacoes}
+					pageCount={
+						contaMovimentacoes.pageSize > 0
+							? Math.ceil(contaMovimentacoes.totalElements / contaMovimentacoes.pageSize)
+							: 0
+					}
+					pagination={pagination}
+					onPaginationChange={setPagination}
 				/>
 			</div>
 		</div>
