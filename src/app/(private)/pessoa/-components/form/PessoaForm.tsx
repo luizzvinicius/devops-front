@@ -14,12 +14,21 @@ import { FieldInfo } from "@/components/forms/FieldInfo";
 import PessoaDataTable from "../table/PessoaTable";
 import { toast } from "sonner";
 import { createPessoaSchema, type CreatePessoaType, nullFormState } from "./formSchema";
+import { useState } from "react";
+import type { PaginationState } from "@tanstack/react-table";
 
 export function CreatePessoaForm() {
-	const { data: pessoasResponse } = useGetPessoas(0);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 10,
+	});
+
+	const { data: pessoasResponse } = useGetPessoas(pagination.pageIndex);
 	const { mutateAsync: createPessoa } = useCreatePessoa();
-	const { mutateAsync: deletePessoa } = useDeletePessoa();
-	const { mutateAsync: updatePessoa } = useUpdatePessoa();
+	const { mutateAsync: deletePessoa } = useDeletePessoa(pagination.pageIndex, () =>
+		setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex - 1 })),
+	);
+	const { mutateAsync: updatePessoa } = useUpdatePessoa(pagination.pageIndex);
 
 	const form = useForm({
 		defaultValues: nullFormState,
@@ -141,6 +150,9 @@ export function CreatePessoaForm() {
 					deletePessoa={async id => {
 						await deletePessoa(id);
 					}}
+					pageCount={pessoasResponse.pageSize && pessoasResponse.totalElements > 0 ? Math.ceil(pessoasResponse.totalElements / pessoasResponse.pageSize) : 1}
+					pagination={pagination}
+					onPaginationChange={setPagination}
 				/>
 			</div>
 		</div>

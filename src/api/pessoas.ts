@@ -12,7 +12,7 @@ const ENTITY = "/pessoa";
 
 export async function getAllPessoas(page: number) {
 	const { data } = await axiosInstance.get<PessoaPageDto>(`${BASE_URL}${ENTITY}/all`, {
-		params: { p: page },
+		params: { page: page },
 	});
 	return data;
 }
